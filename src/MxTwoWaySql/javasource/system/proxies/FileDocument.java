@@ -81,9 +81,6 @@ public class FileDocument implements com.mendix.systemwideinterfaces.core.IEntit
 		if (mendixObject.isInstanceOf("System.Image")) {
 			return system.proxies.Image.initialize(context, mendixObject);
 		}
-		if (mendixObject.isInstanceOf("TinySqlStudio2.SearchObjectDoc")) {
-			return tinysqlstudio2.proxies.SearchObjectDoc.initialize(context, mendixObject);
-		}
 		if (mendixObject.isInstanceOf("System.SynchronizationErrorFile")) {
 			return system.proxies.SynchronizationErrorFile.initialize(context, mendixObject);
 		}

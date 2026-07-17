@@ -112,9 +112,6 @@ public class UserActionsRegistrar
     registrator.registerUserAction(nanoprofiler.actions.TestRegexMatchAsTarget.class);
     registrator.registerUserAction(nanoprofiler.actions.TickNanoProfiler.class);
     registrator.registerUserAction(system.actions.VerifyPassword.class);
-    registrator.registerUserAction(tinysqlstudio2.actions.RetrieveAdvanced.class);
-    registrator.registerUserAction(tinysqlstudio2.actions.RetrieveCountAdvanced.class);
-    registrator.registerUserAction(tinysqlstudio2.actions.UpdateAdvanced.class);
     registrator.registerUserAction(twowaysql.actions.AddBooleanParameter.class);
     registrator.registerUserAction(twowaysql.actions.AddDateTimeParameter.class);
     registrator.registerUserAction(twowaysql.actions.AddDecimalParameter.class);
