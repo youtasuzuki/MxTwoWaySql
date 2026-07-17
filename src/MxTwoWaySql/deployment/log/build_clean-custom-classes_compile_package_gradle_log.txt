@@ -1,0 +1,80 @@
+Initialized native services in: C:\Users\s41705\.gradle\native
+Initialized jansi services in: C:\Users\s41705\.gradle\native
+Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-21.0.5.11-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.5.11-hotspot, JAVA_VERSION=21.0.5, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=21.0.5+11-LTS, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=21.0.5+11-LTS, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+The client will now receive all logging from the daemon (pid: 35104). The daemon log file: C:\Users\s41705\.gradle\daemon\8.5\daemon-35104.out.log
+Starting 8th build in daemon [uptime: 3 mins 17.604 secs, performance: 99%, GC rate: 0.00/s, heap usage: 0% of 512 MiB, non-heap usage: 23% of 384 MiB]
+Using 12 worker leases.
+Now considering [C:\github\MxTwoWaySql\src\MxTwoWaySql\deployment] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'C:\github\MxTwoWaySql\src\MxTwoWaySql\deployment\settings.gradle'.
+Projects loaded. Root project using build file 'C:\github\MxTwoWaySql\src\MxTwoWaySql\deployment\build.gradle'.
+Included projects: [root project 'deployment']
+
+> Configure project :
+Evaluating root project 'deployment' using build file 'C:\github\MxTwoWaySql\src\MxTwoWaySql\deployment\build.gradle'.
+All projects evaluated.
+Task name matched 'clean-custom-classes'
+Task name matched 'compile'
+Task name matched 'package'
+Selected primary task 'clean-custom-classes' from project :
+Selected primary task 'compile' from project :
+Selected primary task 'package' from project :
+Tasks to be executed: [task ':clean-custom-classes', task ':compile', task ':package']
+Tasks that were excluded: []
+Resolve mutations for :clean-custom-classes (Thread[#314,Execution worker,5,main]) started.
+:clean-custom-classes (Thread[#319,Execution worker Thread 6,5,main]) started.
+destroyer locations for task group 0 (Thread[#320,Execution worker Thread 7,5,main]) started.
+destroyer locations for task group 1 (Thread[#320,Execution worker Thread 7,5,main]) started.
+
+> Task :clean-custom-classes
+Caching disabled for task ':clean-custom-classes' because:
+  Build cache is disabled
+Task ':clean-custom-classes' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :compile (Thread[#319,Execution worker Thread 6,5,main]) started.
+:compile (Thread[#319,Execution worker Thread 6,5,main]) started.
+
+> Task :compile FAILED
+Caching disabled for task ':compile' because:
+  Build cache is disabled
+Task ':compile' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':compile'.
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain 'C:\Program Files\Eclipse Adoptium\jdk-21.0.5.11-hotspot'.
+Compiling with JDK Java compiler API.
+2 actionable tasks: 2 executed
+Watched directory hierarchies: [C:\github\MxTwoWaySql\src\MxTwoWaySql\deployment]
+
+
+C:\github\MxTwoWaySql\src\MxTwoWaySql\javasource\communitycommons\Misc.java:643: エラー: 不適合な型: List<RandomAccessRead>をList<InputStream>に変換できません:
+				mergePdf.addSources(sources);
+				                    ^
+C:\github\MxTwoWaySql\src\MxTwoWaySql\javasource\communitycommons\StringUtils.java:231: エラー: シンボルを見つけられません
+		return IOUtils.toString(BOMInputStream.builder().setInputStream(inputStream).get(), charset);
+		                                      ^
+  シンボル:   メソッド builder()
+  場所: クラス BOMInputStream
+C:\github\MxTwoWaySql\src\MxTwoWaySql\javasource\twowaysql\implementation\FakeMendixObject.java:16: エラー: FakeMendixObjectはabstractでなく、IMendixObject内のabstractメソッドhasChangedMemberValue(IContext)をオーバーライドしません
+public class FakeMendixObject implements IMendixObject {
+       ^
+ノート: 一部の入力ファイルは推奨されないAPIを使用またはオーバーライドしています。
+ノート: 詳細は、-Xlint:deprecationオプションを指定して再コンパイルしてください。
+ノート: 入力ファイルの操作のうち、未チェックまたは安全ではないものがあります。
+ノート: 詳細は、-Xlint:uncheckedオプションを指定して再コンパイルしてください。
+ノート: 一部のメッセージは簡略化されています。-Xdiags:verboseで再コンパイルして完全な出力を取得してください
+エラー3個
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compile'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s
+

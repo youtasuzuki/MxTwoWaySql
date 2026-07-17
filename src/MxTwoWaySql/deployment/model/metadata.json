@@ -1,0 +1,123 @@
+{
+  "RuntimeVersion": "10.24.0.73019",
+  "ProjectID": "1dbbf881-0719-4bbf-8317-32dec4ea04fc",
+  "ProjectName": "MxTwoWaySql",
+  "ModelVersion": "unversioned",
+  "Description": "",
+  "AdminUser": "MxAdmin",
+  "AdminRole": "8dd52bfa-6d7e-453b-b506-303c0a3d9567",
+  "JavaVersion": 21,
+  "Roles": {
+    "8dd52bfa-6d7e-453b-b506-303c0a3d9567": {
+      "Name": "Administrator",
+      "ManageableRoles": [
+        "8dd52bfa-6d7e-453b-b506-303c0a3d9567",
+        "53f5d6fa-6da9-4a71-b011-454ec052cce8"
+      ]
+    },
+    "53f5d6fa-6da9-4a71-b011-454ec052cce8": {
+      "Name": "User"
+    }
+  },
+  "Constants": [
+    {
+      "Name": "TwoWaySQL.DateTimeFormat",
+      "Type": "String",
+      "Description": "ExportCsvByTwoWaySqlの日付フォーマットを示すConstant。日付フォーマットの指定がない場合に使用する。",
+      "DefaultValue": "yyyy-MM-dd HH:mm:ss:SSSZ"
+    },
+    {
+      "Name": "TwoWaySQL.DEFAULT_BATCH_COMMIT_SIZE",
+      "Type": "Integer",
+      "Description": "Specify the default batch size for batch commit.",
+      "DefaultValue": "500"
+    },
+    {
+      "Name": "TwoWaySQL.DEFAULT_JOINEE_CACHE_SIZE",
+      "Type": "Integer",
+      "Description": "Specify the default cache size of the Joinee cache.",
+      "DefaultValue": "500"
+    },
+    {
+      "Name": "TwoWaySQL.EXDS_NO_OPTION",
+      "Type": "Integer",
+      "Description": "外部データソースに対するオプション無し",
+      "DefaultValue": "0"
+    },
+    {
+      "Name": "TwoWaySQL.EXDS_WO_PRAM_TZ_ADJST",
+      "Type": "Integer",
+      "Description": "外部データソースで動かすSQLパラメータをData and Time型(タイムゾーン有)からjava.sql.Timestamp(タイムゾーン無)へ変換する際にUTC時刻への調整を行わないようにします。\r\nデフォストではSQLパラメータのData and Timeは例えば9:00JSTなら0:00になりますが。このオプションを付けると9:00となります。\r\nパラメータへの指定なので、影響するのはAddDateTimeParameterアクションでのWhere句やInsert/Update句へのパタメータです。\r\n\r\n外部データソースがMendixのDBである場合はタイムゾーン無しのUTC時刻が保管されているためこのオプションは指定不要です。\r\nその他の場合は環境に合わせて指定して下さい。\r\n",
+      "DefaultValue": "1"
+    },
+    {
+      "Name": "TwoWaySQL.EXDS_WO_RSLT_TZ_ADJST",
+      "Type": "Integer",
+      "Description": "外部データソースで動かすSQL実行結果のjava.sql.Timestamp(タイムゾーン無)からData and Time型(タイムゾーン有)へ変換する際に、取得したjava.sql.Timestampが実行環境のタイムゾーンへの時刻調整済みであるとみなし、UTC相対での時刻調整を行わないようにします。\r\n外部データソースがMendixのDBである場合は本オプションは指定不要です。\r\nその他の場合は環境に合わせて指定して下さい。\r\n\r\nデフォルト(指定なし)ではターゲットタイムゾーンがJSTであればSQL実行結果のava.sql.Timestampが0:00なら出力値は9:00JSTになりますが、このオプションを付けると0:00JSTとなります。\r\n※ここでのターゲットタイムゾーンはRetrieveByTwoWaySqlであればVMの実行環境のタイムゾーンで、ExportCsvByTwoWaySqlであればCsvFormatで指定されたタイムゾーンです。\r\n\r\nSQL実行結果変換への指定なので影響するのはEntityのData and Time型の項目へのストア時とCSV出力時のみです。SQL文上で直接DB上の日時項目を文字列に変換する場合は影響しません。SQL上で日時項目を文字列に変換する場合はそこでタイムゾーン調整を考慮して下さい。",
+      "DefaultValue": "2"
+    },
+    {
+      "Name": "TwoWaySQL.JOINEE_CACHE_USE_THRESHOLD_CARDINALITY",
+      "Type": "Integer",
+      "Description": "Cardinality value to determine whether to use JOINEE CACHE. A percentage value from 1 to 100, where 100 means that all values are unique. Cache is enabled when the actual data Cardinality value is less than or equal to the specified value.",
+      "DefaultValue": "50"
+    },
+    {
+      "Name": "TwoWaySQL.SlowQueryThresholdMillis",
+      "Type": "Integer",
+      "Description": "",
+      "DefaultValue": "10000"
+    },
+    {
+      "Name": "Atlas_UI_Resources.Atlas_UI_Resources_Version",
+      "Type": "String",
+      "Description": "",
+      "DefaultValue": " 2.7.1"
+    },
+    {
+      "Name": "CommunityCommons.MergeMultiplePdfs_MaxAtOnce",
+      "Type": "Integer",
+      "Description": "Restricted to 10 files at once for Mendix Cloud v4 compatibility. If you need to merge more than 10 files increase the number here. Setting the value to <=0 means unlimited.\r\n\r\nNote: We very strongly recommend to not increase the number for applications running in Mendix Cloud v4.",
+      "DefaultValue": "10"
+    },
+    {
+      "Name": "NanoProfiler.MonitorRuntimeLoggerThreadDeath",
+      "Type": "Boolean",
+      "Description": "If you set this to True, when the Mendix Runtime logger thread terminates abnormally, information about the cause of the error will be displayed in the 'LastErrorInfo' field of the NanoProfiler status.\r\nAdditional information:\r\nThe Mendix Runtime logger thread is the only thread responsible for log delivery, and if it terminates abnormally, not only will NanoProfiler stop working, but all logs will no longer be published, and the Java VM will then terminate abnormally with an OutOfMemoryError.",
+      "DefaultValue": "True"
+    },
+    {
+      "Name": "TinySqlStudio2.DisplayCount",
+      "Type": "Integer",
+      "Description": "1ページに表示する件数を指定。デフォルト値は100\r\n\r\nSpecify the number of items to display on one page. The default value is 100",
+      "DefaultValue": "100"
+    },
+    {
+      "Name": "UI_Resources.Atlas_UI_Resources_Version",
+      "Type": "String",
+      "Description": "",
+      "DefaultValue": " 2.5.5"
+    }
+  ],
+  "ScheduledEvents": [],
+  "Languages": [
+    "en_US"
+  ],
+  "RequestHandlers": [
+    {
+      "Name": "/api/",
+      "DefaultEnabled": true,
+      "MatchExactly": false
+    },
+    {
+      "Name": "/link/",
+      "DefaultEnabled": true,
+      "MatchExactly": false
+    },
+    {
+      "Name": "/p/",
+      "DefaultEnabled": false,
+      "MatchExactly": false
+    }
+  ]
+}
