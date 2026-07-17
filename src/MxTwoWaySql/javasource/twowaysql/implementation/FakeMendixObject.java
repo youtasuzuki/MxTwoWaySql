@@ -198,4 +198,16 @@ public class FakeMendixObject implements IMendixObject {
 		return false;
 	}
 
+	@Override
+	public IMendixObjectMember<?> getMember(String arg0) {
+		// TODO 自動生成されたメソッド・スタブ
+		return null;
+	}
+
+	@Override
+	public boolean hasChangedMemberValue(IContext arg0) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
 }
