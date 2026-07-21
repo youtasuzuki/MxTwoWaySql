@@ -28,7 +28,9 @@ where
 - Ensure the file encoding is UTF-8 (without BOM).  
 - Prefix filenames with "INS_", "SEL_", "UPD_", or "DEL_" to correspond with CRUD operations.  
 - Due to Mendix's architecture regarding automatic ID generation, only association entities can be inserted using this function.  
-- In Linux-based environments such as MxCloud, the file system is case-sensitive; therefore, exercise caution when specifying folder and file names.  
+- In Linux-based environments such as MxCloud, the file system is case-sensitive; therefore, exercise caution when specifying folder and file names.
+- In this module, the DBFlute runtime is used solely to parse 2WaySQL and convert it into standard SQL; therefore, other DBFlute features are not supported.
+
 
 You can access not only the Mendix app's internal database but also external databases.
 To access an external database, you must register the external data source using the `RegisterExternalDataSource` action within the `AfterStartUp` event when the app starts.
