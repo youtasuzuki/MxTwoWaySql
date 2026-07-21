@@ -34,8 +34,8 @@ You can access not only the Mendix app's internal database but also external dat
 To access an external database, you must register the external data source using the `RegisterExternalDataSource` action within the `AfterStartUp` event when the app starts.
 Then, specify the external data source directive within the 2WaySQL as shown below.
 ```
--- It's the external data source directive
 -- @YourExtDataSourceName@ 
+-- It's the external data source directive
 select
  name, description
 from
