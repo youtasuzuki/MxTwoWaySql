@@ -43,7 +43,7 @@ select
 from
  your_external_table
 ```
-Note: Transaction control defaults to auto-commit when accessing external data sources.
+Note: Transaction control defaults to auto-commit when accessing external data sources. Additionally, the JDBC driver to be used must be downloaded using Studio Pro's Java dependency definitions.
 
 A simple sample is included in the `_Sample` folder, so we recommend checking it first.
 
