@@ -37,7 +37,7 @@ To access an external database, you must register the external data source using
 Then, specify the external data source directive within the 2WaySQL as shown below.
 ```
 -- @YourExtDataSourceName@ 
--- It's the external data source directive
+-- ^^^^^^^^^^^^^^^^^^^^^^^ It's the external data source directive
 select
  name, description
 from
