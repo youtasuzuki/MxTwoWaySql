@@ -15,12 +15,12 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
+ * It iterates over the execution results of TwoWaySQL using a cursor. Since it invokes a callback for each record rather than loading the entire result set, processing can be performed with low memory usage.
  * Please use non-persistent Entity for search condition and search result.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * 
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class CursorLoopOnTwoWaySql extends UserAction<java.lang.Long>

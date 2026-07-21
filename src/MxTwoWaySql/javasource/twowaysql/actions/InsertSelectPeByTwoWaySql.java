@@ -16,12 +16,12 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * Store the result of the TwoWaySQL into the persistent entity.
+ * Generate persistent entities from the TwoWaySQL result list and commit them.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
  * However, due to the specification of MendixModeler, single quotes in 2 waySQL must be escaped with single quotes.
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class InsertSelectPeByTwoWaySql extends UserAction<java.lang.Long>

@@ -17,12 +17,12 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
+ * Execute the select 2WaySQL and load the results into a list of the specified non-persistent entities.
  * Please use non-persistent Entity for search condition and search result.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * 
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class RetrieveByTwoWaySql extends UserAction<java.util.List<IMendixObject>>

@@ -39,6 +39,9 @@ import twowaysql.integration.ExtDataSourceBinder;
 import twowaysql.proxies.TwoSqlTestResult;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
+/**
+ * Executes all TwoWaySQL files located under the `resources/sql/` folder and returns a list of the results.
+ */
 public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 {
 	public TestTwoWaySqls(IContext context)

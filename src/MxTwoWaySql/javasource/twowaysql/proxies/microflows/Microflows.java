@@ -26,6 +26,46 @@ public final class Microflows
 	{
 		cB_emptyBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder dS_Sample_Of_RetrieveByTwoWaySqlBuilder(
+		twowaysql.proxies.Sample1 _forSample1
+	)
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.DS_Sample_Of_RetrieveByTwoWaySql");
+		builder = builder.withParam("ForSample1", _forSample1);
+		return builder;
+	}
+
+	public static java.util.List<twowaysql.proxies.Sample1> dS_Sample_Of_RetrieveByTwoWaySql(
+		IContext context,
+		twowaysql.proxies.Sample1 _forSample1
+	)
+	{
+		Object result = dS_Sample_Of_RetrieveByTwoWaySqlBuilder(
+				_forSample1
+			)
+			.execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> twowaysql.proxies.Sample1.initialize(context, obj));
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder dS_Sample_Of_RetrievePeByTwoWaySqlBuilder(
+		twowaysql.proxies.Sample1 _forSample1
+	)
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.DS_Sample_Of_RetrievePeByTwoWaySql");
+		builder = builder.withParam("ForSample1", _forSample1);
+		return builder;
+	}
+
+	public static java.util.List<system.proxies.User> dS_Sample_Of_RetrievePeByTwoWaySql(
+		IContext context,
+		twowaysql.proxies.Sample1 _forSample1
+	)
+	{
+		Object result = dS_Sample_Of_RetrievePeByTwoWaySqlBuilder(
+				_forSample1
+			)
+			.execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> system.proxies.User.initialize(context, obj));
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder dS_TwoSqlTestResultBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.DS_TwoSqlTestResult");
@@ -36,5 +76,25 @@ public final class Microflows
 	{
 		Object result = dS_TwoSqlTestResultBuilder().execute(context);
 		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> twowaysql.proxies.TwoSqlTestResult.initialize(context, obj));
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder nAV_Sample_Of_RetrieveByTwoWaySqlBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.NAV_Sample_Of_RetrieveByTwoWaySql");
+		return builder;
+	}
+
+	public static void nAV_Sample_Of_RetrieveByTwoWaySql(IContext context)
+	{
+		nAV_Sample_Of_RetrieveByTwoWaySqlBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder nAV_Sample_Of_RetrievePeByTwoWaySqlBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.NAV_Sample_Of_RetrievePeByTwoWaySql");
+		return builder;
+	}
+
+	public static void nAV_Sample_Of_RetrievePeByTwoWaySql(IContext context)
+	{
+		nAV_Sample_Of_RetrievePeByTwoWaySqlBuilder().execute(context);
 	}
 }

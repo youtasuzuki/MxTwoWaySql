@@ -16,7 +16,7 @@ public final class Constants
 	// These are the constants for the TwoWaySQL module
 
 	/**
-	* ExportCsvByTwoWaySqlの日付フォーマットを示すConstant。日付フォーマットの指定がない場合に使用する。
+	* A constant representing the date format for the ExportCsvByTwoWaySql action. It is used when no date format is specified during the execution of ExportCsvByTwoWaySql.
 	*/
 	public static java.lang.String getDateTimeFormat()
 	{
@@ -40,7 +40,7 @@ public final class Constants
 	}
 
 	/**
-	* 外部データソースに対するオプション無し
+	* No options for external data sources.
 	*/
 	public static java.lang.Long getEXDS_NO_OPTION()
 	{
@@ -48,13 +48,12 @@ public final class Constants
 	}
 
 	/**
-	* 外部データソースで動かすSQLパラメータをData and Time型(タイムゾーン有)からjava.sql.Timestamp(タイムゾーン無)へ変換する際にUTC時刻への調整を行わないようにします。
-	* デフォストではSQLパラメータのData and Timeは例えば9:00JSTなら0:00になりますが。このオプションを付けると9:00となります。
-	* パラメータへの指定なので、影響するのはAddDateTimeParameterアクションでのWhere句やInsert/Update句へのパタメータです。
+	* This option prevents the system from adjusting SQL parameters of the "Date and Time" type (with time zone) to UTC when converting them to `java.sql.Timestamp` (without time zone).
+	* By default, a "Date and Time" parameter value of 9:00 JST would be converted to 0:00; enabling this option ensures it remains 9:00.
+	* As this setting applies to parameters, it affects parameters used in `WHERE`, `INSERT`, or `UPDATE` clauses within the "AddDateTimeParameter" action.
 	* 
-	* 外部データソースがMendixのDBである場合はタイムゾーン無しのUTC時刻が保管されているためこのオプションは指定不要です。
-	* その他の場合は環境に合わせて指定して下さい。
-	* 
+	* If the external data source is a Mendix database, UTC time without a time zone is already stored, so this option is not required.
+	* In other cases, please configure this setting according to your environment.
 	*/
 	public static java.lang.Long getEXDS_WO_PRAM_TZ_ADJST()
 	{
@@ -62,14 +61,14 @@ public final class Constants
 	}
 
 	/**
-	* 外部データソースで動かすSQL実行結果のjava.sql.Timestamp(タイムゾーン無)からData and Time型(タイムゾーン有)へ変換する際に、取得したjava.sql.Timestampが実行環境のタイムゾーンへの時刻調整済みであるとみなし、UTC相対での時刻調整を行わないようにします。
-	* 外部データソースがMendixのDBである場合は本オプションは指定不要です。
-	* その他の場合は環境に合わせて指定して下さい。
+	* When converting a `java.sql.Timestamp` (timezone-agnostic) obtained from an external data source query into a Mendix Runtime "Date and Time" attribute (timezone-aware), this option treats the retrieved timestamp as already adjusted to the execution environment's timezone, thereby preventing any additional UTC-based timezone adjustment.
+	* This option is not required if the external data source is the Mendix database itself.
+	* In other cases, please configure this setting according to your environment.
 	* 
-	* デフォルト(指定なし)ではターゲットタイムゾーンがJSTであればSQL実行結果のava.sql.Timestampが0:00なら出力値は9:00JSTになりますが、このオプションを付けると0:00JSTとなります。
-	* ※ここでのターゲットタイムゾーンはRetrieveByTwoWaySqlであればVMの実行環境のタイムゾーンで、ExportCsvByTwoWaySqlであればCsvFormatで指定されたタイムゾーンです。
+	* By default (without this option), if the target timezone is JST and the SQL result's `java.sql.Timestamp` is 00:00, the output value becomes 09:00 JST; however, enabling this option results in 00:00 JST.
+	* *Note: The "target timezone" here refers to the VM execution environment's timezone for `RetrieveByTwoWaySql`, and the timezone specified in the `CsvFormat` for `ExportCsvByTwoWaySql`.
 	* 
-	* SQL実行結果変換への指定なので影響するのはEntityのData and Time型の項目へのストア時とCSV出力時のみです。SQL文上で直接DB上の日時項目を文字列に変換する場合は影響しません。SQL上で日時項目を文字列に変換する場合はそこでタイムゾーン調整を考慮して下さい。
+	* Since this setting applies to the conversion of SQL execution results, it only affects data storage into entity "Date and Time" attributes and CSV output operations. It does not affect cases where date/time fields from the database are converted directly to strings within the SQL statement itself. If you convert date/time fields to strings within the SQL, please account for timezone adjustments at that stage.
 	*/
 	public static java.lang.Long getEXDS_WO_RSLT_TZ_ADJST()
 	{

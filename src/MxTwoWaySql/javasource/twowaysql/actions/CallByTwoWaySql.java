@@ -17,10 +17,11 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * About 2WaySQL , See also
+ * Execute stored procedures or stored functions within the database.
+ * 
+ * About 2WaySQL, See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * However, due to the specification of MendixModeler, single quotes in 2 waySQL must be escaped with single quotes.
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class CallByTwoWaySql extends UserAction<java.util.List<IMendixObject>>

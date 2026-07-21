@@ -20,14 +20,12 @@ import twowaysql.proxies.IdValue;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * You can retrieve Persistent-Entity by 2WaySQL which returns ID column as 'IdValue'.
+ * Retrieve Persistent-Entity by select 2WaySQL which returns ID column as 'IdValue'.
  * Based on the ID selected by 2WaySQL, PEs are retrieved in bulk using Core.retrieveIdList(IContext, List<IMendixIdentifier>).
- * Please use non-persistent Entity for search condition.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * 
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class RetrievePeByTwoWaySql extends UserAction<java.util.List<IMendixObject>>

@@ -15,12 +15,11 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * Please use non-persistent Entity for search condition and search result.
+ * Perform a direct database update using 2WaySQL.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * However, due to the specification of MendixModeler, single quotes in 2 waySQL must be escaped with single quotes.
- * You have to use the parameter prefix 'pmb.'
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
 public class UpdateByTwoWaySql extends UserAction<java.lang.Long>

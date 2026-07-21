@@ -17,12 +17,11 @@ import com.mendix.systemwideinterfaces.core.UserAction;
 /**
  * You can delete Persistent-Entity by 2WaySQL which returns ID column as 'IdValue'.
  * Based on the ID selected by 2WaySQL, PEs are retrieved in bulk using Core.retrieveIdList(IContext, List<IMendixIdentifier>)  then will be deleted by Core.delete(IContext, List<IMendixObject>).
+ * Note: For Mendix v11.6 or later, it is more efficient to perform deletions using OQL.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
- * 
- * You have to use the parameter prefix 'pmb.'
- * 
+ * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  */
 public class DeletePeByTwoWaySql extends UserAction<java.lang.Long>
 {

@@ -15,8 +15,8 @@ import twowaysql.integration.ExtDataSourceBinder;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * 外部DBを使用する場合は、本ActionをAfterStartUpから呼び出して、データソースを登録して下さい。
- * また、使用するJdbc Driverのjarファイルをuserlibフォルダに追加するか、Mendix v10.6以降であればモジュール設定のjava依存性設定でJdbc Driverのjarへの依存性を設定してvendorlibフォルダに自動ダウンロードされるようにして下さい。これはPostgreSQLであってもMendixランタイム側とは別クラスローダーとなるため必要です。
+ * If you are using an external database, please call this Action from `AfterStartUp` to register the data source.
+ * Additionally, regarding the JDBC driver JAR file, configure the dependency in the application module's Java dependency settings so that it is automatically downloaded to the `vendorlib` folder. This step is necessary because, even with PostgreSQL, the driver operates under a different class loader than the Mendix Runtime.
  */
 public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 {
