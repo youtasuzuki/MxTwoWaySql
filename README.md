@@ -41,6 +41,7 @@ select
 from
  your_external_table
 ```
+Note: Transaction control defaults to auto-commit when accessing external data sources.
 
 A simple sample is included in the `_Sample` folder, so we recommend checking it first.
 
@@ -48,5 +49,3 @@ A simple sample is included in the `_Sample` folder, so we recommend checking it
 - dbflute-runtime
 - commons-csv
 - HikariCP
-
-#Restrictions
