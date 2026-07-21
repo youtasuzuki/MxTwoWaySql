@@ -28,6 +28,7 @@ where
 - Prefix filenames with "INS_", "SEL_", "UPD_", or "DEL_" to correspond with CRUD operations.  
 - Due to Mendix's architecture regarding automatic ID generation, only association entities can be inserted using this function.  
 - In Linux-based environments such as MxCloud, the file system is case-sensitive; therefore, exercise caution when specifying folder and file names.
+A simple sample is included in the `_Sample` folder, so we recommend checking it first.
 
 # Typical usage scenario
 
