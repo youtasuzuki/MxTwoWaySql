@@ -34,10 +34,10 @@ import com.mendix.core.Core;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
+import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.TwoWaySqlExecutor;
 import twowaysql.integration.ExtDataSourceBinder;
 import twowaysql.proxies.TwoSqlTestResult;
-import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
  * Executes all TwoWaySQL files located under the `resources/sql/` folder and returns a list of the results.
@@ -78,12 +78,12 @@ public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 				result.setDataSourceName(extDataSourceName);
 				DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 				if (ds == null) {
-					result.setTestStatus("09.NG (DataSource not found.)");
+					result.setTestStatus("09.Failure (DataSource not found.)");
 				} else {
 					try (Connection connection = ds.getConnection()) {
 						doTestSQL(connection, result);
 					} catch (SQLException e) {
-						result.setTestStatus("09.NG (Could not get connection.)");
+						result.setTestStatus("09.Failure (Could not get connection.)");
 						StringWriter sw = new StringWriter();
 						PrintWriter pw = new PrintWriter(sw);
 						e.printStackTrace(pw);
@@ -117,7 +117,7 @@ public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 			if (result.getRelativePath().lastIndexOf("CALL_") >= 0) {
 				try (PreparedStatement stmt = con.prepareCall(result.getSqlStatement(getContext()))) {
 					stmt.executeUpdate();
-					result.setTestStatus("00.OK");
+					result.setTestStatus("00.Success");
 				}				
 			} else {
 				try (PreparedStatement stmt = con.prepareStatement(result.getSqlStatement(getContext()))) {
@@ -146,22 +146,22 @@ public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 													+ result.getReturnEntityType());
 										}
 									}
-									result.setTestStatus("00.OK");
+									result.setTestStatus("00.Success");
 								} else {
-									result.setTestStatus("01.OK (but no records were selected.)");
+									result.setTestStatus("01.Success (but no records were selected.)");
 								}
 							} else {
-								result.setTestStatus("02.OK (but there is no return entity type specified.)");
+								result.setTestStatus("02.Success (but there is no return entity type specified.)");
 							}
 						}
 					} else {
 						stmt.executeUpdate();
-						result.setTestStatus("00.OK");
+						result.setTestStatus("00.Success");
 					}
 				}
 			}
 		} catch (Exception e) {
-			result.setTestStatus("09.NG");
+			result.setTestStatus("09.Failure");
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
