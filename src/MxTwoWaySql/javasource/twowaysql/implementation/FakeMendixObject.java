@@ -39,7 +39,9 @@ public class FakeMendixObject implements IMendixObject {
 	@Override
 	public IMendixObject clone() throws CloneNotSupportedException {
 		// TODO 自動生成されたメソッド・スタブ
-		return null;
+		// CWE-476: Null Pointer Dereference
+		//return null;
+		return clone();
 	}
 
 	@Override
