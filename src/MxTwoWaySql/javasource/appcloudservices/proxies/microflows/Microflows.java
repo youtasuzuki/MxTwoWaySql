@@ -6,11 +6,9 @@ package appcloudservices.proxies.microflows;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import com.mendix.core.Core;
-import com.mendix.core.CoreException;
-import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
-import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 public class Microflows
 {
@@ -53,13 +51,6 @@ public class Microflows
 		Map<java.lang.String, Object> params = new HashMap<>();
 		params.put("OpenId", _openId);
 		Core.microflowCall("AppCloudServices.RefreshUserPermissions").withParams(params).execute(context);
-	}
-	public static profileservice.proxies.UserProfile retrieveUserProfile(IContext context, java.lang.String _userIdentity)
-	{
-		Map<java.lang.String, Object> params = new HashMap<>();
-		params.put("UserIdentity", _userIdentity);
-		IMendixObject result = (IMendixObject)Core.microflowCall("AppCloudServices.RetrieveUserProfile").withParams(params).execute(context);
-		return result == null ? null : profileservice.proxies.UserProfile.initialize(context, result);
 	}
 	public static boolean retrieveUserRoles(IContext context, system.proxies.User _user)
 	{
