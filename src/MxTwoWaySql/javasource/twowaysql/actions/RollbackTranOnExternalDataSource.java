@@ -12,6 +12,9 @@ package twowaysql.actions;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
+/**
+ * Roll back the connection reserved for the transaction. The transaction itself continues without terminating.
+ */
 public class RollbackTranOnExternalDataSource extends UserAction<java.lang.Void>
 {
 	private final java.lang.String ExternalDataSourceName;

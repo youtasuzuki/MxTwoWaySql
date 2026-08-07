@@ -12,6 +12,9 @@ package twowaysql.actions;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
+/**
+ * Marks the specified external data source as ready to start a transaction. The actual transaction begins upon the execution of the first SQL statement.
+ */
 public class StartTranOnExternalDataSource extends UserAction<java.lang.Void>
 {
 	private final java.lang.String ExternalDataSourceName;

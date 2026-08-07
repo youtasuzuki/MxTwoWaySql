@@ -12,6 +12,9 @@ package twowaysql.actions;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
+/**
+ * The connection reserved for the transaction is released after the commit, thereby terminating the transaction.
+ */
 public class EndTranOnExternalDataSource extends UserAction<java.lang.Void>
 {
 	private final java.lang.String ExternalDataSourceName;

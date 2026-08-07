@@ -12,6 +12,9 @@ package twowaysql.actions;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
+/**
+ * Commits the connection reserved for the transaction. The transaction itself continues without terminating.
+ */
 public class CommitTranOnExternalDataSource extends UserAction<java.lang.Void>
 {
 	private final java.lang.String ExternalDataSourceName;

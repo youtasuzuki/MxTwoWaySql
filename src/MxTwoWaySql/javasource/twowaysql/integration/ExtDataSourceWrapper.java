@@ -30,6 +30,13 @@ public class ExtDataSourceWrapper implements DataSource {
 		} else {
 			// Transaction started for this datasource, return the connection
 			con = transactionMap.get(name);
+			if (con == null) {
+				// Connection not yet created for this transaction, get a new connection from the underlying datasource
+				con = ds.getConnection();
+				ExtConnectionWrapper conWrapper = new ExtConnectionWrapper(con);
+				transactionMap.put(name, conWrapper);
+				con = conWrapper;
+			}
 		}
 		return con;
 	}
