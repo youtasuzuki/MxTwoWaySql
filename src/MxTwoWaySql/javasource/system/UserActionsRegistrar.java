@@ -112,6 +112,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(nanoprofiler.actions.TestRegexMatchAsTarget.class);
     registrator.registerUserAction(nanoprofiler.actions.TickNanoProfiler.class);
     registrator.registerUserAction(system.actions.VerifyPassword.class);
+    registrator.registerUserAction(twowaysql.actions.AbendTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.AddBooleanParameter.class);
     registrator.registerUserAction(twowaysql.actions.AddDateTimeParameter.class);
     registrator.registerUserAction(twowaysql.actions.AddDecimalParameter.class);
@@ -126,8 +127,10 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.BatchFetchLoopByTwoWaySQL.class);
     registrator.registerUserAction(twowaysql.actions.CallByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.CloseBatchFetchLoop.class);
+    registrator.registerUserAction(twowaysql.actions.CommitTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.CursorLoopOnTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.DeletePeByTwoWaySql.class);
+    registrator.registerUserAction(twowaysql.actions.EndTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.ExportCsvByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.GetJoinee.class);
     registrator.registerUserAction(twowaysql.actions.GetNext.class);
@@ -139,7 +142,9 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.RetrieveById.class);
     registrator.registerUserAction(twowaysql.actions.RetrieveByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.RetrievePeByTwoWaySql.class);
+    registrator.registerUserAction(twowaysql.actions.RollbackTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.SetDefaultTimeZoneIdForCsv.class);
+    registrator.registerUserAction(twowaysql.actions.StartTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.TestTwoWaySqls.class);
     registrator.registerUserAction(twowaysql.actions.UpdateByTwoWaySql.class);
   }

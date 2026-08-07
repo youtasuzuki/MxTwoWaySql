@@ -350,4 +350,14 @@ public final class Microflows
 	{
 		nAV_DispTwoWaySqlSamplePageBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder sUB_ExtDsUpdateTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.SUB_ExtDsUpdateTest");
+		return builder;
+	}
+
+	public static void sUB_ExtDsUpdateTest(IContext context)
+	{
+		sUB_ExtDsUpdateTestBuilder().execute(context);
+	}
 }

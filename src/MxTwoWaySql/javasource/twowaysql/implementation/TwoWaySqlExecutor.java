@@ -26,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.csv.CSVPrinter;
 import org.dbflute.twowaysql.SqlAnalyzer;
 import org.dbflute.twowaysql.context.CommandContext;
@@ -46,6 +44,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 
 import twowaysql.integration.ExtDataSourceBinder;
+import twowaysql.integration.ExtDataSourceWrapper;
 import twowaysql.proxies.constants.Constants;
 
 public class TwoWaySqlExecutor {
@@ -92,12 +91,12 @@ public class TwoWaySqlExecutor {
 				return count;
 			});
 		} else {
-			DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+			ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 			if (ds == null) {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
-			try (Connection con = ds.getConnection()) {
+			try (Connection con = ds.getConnection(context)) {
 				recordCount = selectByTwoWaySql(con, context, twoWaySqlFileName, parameter, resultEntityType,
 						resultList, callBackMicroflow, batchCommitSize);
 			} catch (SQLException e) {
@@ -122,7 +121,7 @@ public class TwoWaySqlExecutor {
 					reportSlowQuery();
 					ResultSetMetaData rmd = rset.getMetaData();
 					int colCount = rmd.getColumnCount();
-					while (rset.next()) {
+					while ( rset.next()) {
 						IMendixObject obj = readToMendixObject(context, resultEntityType, rset, colCount, rmd);
 						if (resultList != null) {
 							resultList.add(obj);
@@ -221,12 +220,12 @@ public class TwoWaySqlExecutor {
 				return count;
 			});
 		} else {
-			DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+			ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 			if (ds == null) {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
-			try (Connection con = ds.getConnection()) {
+			try (Connection con = ds.getConnection(context)) {
 				updateCount = updateByTwoWaySql(con, context, twoWaySqlFileName, parameter);
 			} catch (SQLException e) {
 				throw new MendixRuntimeException(e);
@@ -270,12 +269,12 @@ public class TwoWaySqlExecutor {
 				return count;
 			});
 		} else {
-			DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+			ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 			if (ds == null) {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
-			try (Connection con = ds.getConnection()) {
+			try (Connection con = ds.getConnection(context)) {
 				resultCount = callByTwoWaySql(con, context, twoWaySqlFileName, parameter, resultEntityType, resultList);
 			} catch (SQLException e) {
 				throw new MendixRuntimeException(e);
@@ -390,12 +389,12 @@ public class TwoWaySqlExecutor {
 				return count;
 			});
 		} else {
-			DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+			ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 			if (ds == null) {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
-			try (Connection con = ds.getConnection()) {
+			try (Connection con = ds.getConnection(context)) {
 				recordCount = exportCsvByTwoWaySql(con, context, twoWaySqlFileName, parameter, csvPrinter,
 						dateTimeFormat, userZone);
 			} catch (SQLException e) {
