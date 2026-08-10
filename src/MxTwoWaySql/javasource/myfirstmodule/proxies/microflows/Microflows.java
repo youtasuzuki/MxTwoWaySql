@@ -172,6 +172,16 @@ public final class Microflows
 	{
 		aCT_ExtDsRetrieveTestBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExtDsUpdateSampleBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExtDsUpdateSample");
+		return builder;
+	}
+
+	public static void aCT_ExtDsUpdateSample(IContext context)
+	{
+		aCT_ExtDsUpdateSampleBuilder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExtDsUpdateTestBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExtDsUpdateTest");
@@ -349,6 +359,16 @@ public final class Microflows
 	public static void nAV_DispTwoWaySqlSamplePage(IContext context)
 	{
 		nAV_DispTwoWaySqlSamplePageBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder sUB_ExtDsUpdateSampleBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.SUB_ExtDsUpdateSample");
+		return builder;
+	}
+
+	public static void sUB_ExtDsUpdateSample(IContext context)
+	{
+		sUB_ExtDsUpdateSampleBuilder().execute(context);
 	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder sUB_ExtDsUpdateTestBuilder()
 	{

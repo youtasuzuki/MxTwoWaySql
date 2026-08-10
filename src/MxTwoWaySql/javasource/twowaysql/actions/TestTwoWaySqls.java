@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.sql.DataSource;
 import com.mendix.core.Core;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
@@ -37,6 +36,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.TwoWaySqlExecutor;
 import twowaysql.integration.ExtDataSourceBinder;
+import twowaysql.integration.ExtDataSourceWrapper;
 import twowaysql.proxies.TwoSqlTestResult;
 
 /**
@@ -76,11 +76,11 @@ public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 				});
 			} else {
 				result.setDataSourceName(extDataSourceName);
-				DataSource ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+				ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 				if (ds == null) {
 					result.setTestStatus("09.Failure (DataSource not found.)");
 				} else {
-					try (Connection connection = ds.getConnection()) {
+					try (Connection connection = ds.getConnection(getContext())) {
 						doTestSQL(connection, result);
 					} catch (SQLException e) {
 						result.setTestStatus("09.Failure (Could not get connection.)");
