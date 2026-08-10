@@ -117,6 +117,9 @@ A simple sample is included in the `_Sample` folder, so we recommend checking it
 
 
 -----------------------------------------------------------------------------------------------
+TwoWaySQLはMendix上でSQLのパワーを最大限かつ安全に引き出すツールです。
+TwoWaySQL maximizes the power of SQL on Mendix while ensuring safety.
+
 このモジュールは既存のSaferOQLモジュールのSQL版です。
 SQLをダイレクトに使用するため全てのSQLの機能を利用可能ですし、SaferOQL同様のテスト機能によってSQLとドメインモデルの乖離を一括検出可能です。
 更に外部データベースへの接続機能も追加されているので内部DBと同じように外部データベースにもアクセス可能です。
