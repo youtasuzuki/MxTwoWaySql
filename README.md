@@ -47,6 +47,9 @@ Note: Transaction control defaults to auto-commit when accessing external data s
 
 A simple sample is included in the `_Sample` folder, so we recommend checking it first.
 
+# Restrictions
+- To maintain simplicity, the current internal implementation for creating a DataSource supports only the standard, classic method using a username and password with `HikariDataSource`. However, since the public `twowaysql.integration.putExtDataSource(name, dataSource)` method allows you to configure a data source externally, you can set up your own data source—such as one authenticated via OAuth 2.0—from outside the library.
+
 # Dependencies
 - dbflute-runtime
 - commons-csv
