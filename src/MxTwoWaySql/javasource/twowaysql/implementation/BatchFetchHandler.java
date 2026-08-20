@@ -187,7 +187,7 @@ public class BatchFetchHandler {
 		for (String twoWaySQL : twoWaySqlMapToRetrieveNPEs.keySet()) {
 			new AddListParameter(context, "IdList", idList).executeAction();
 			List<IMendixObject> npes = new ArrayList<IMendixObject>();
-			new TwoWaySqlExecutor().selectByTwoWaySql(context, twoWaySQL, null, twoWaySqlMapToRetrieveNPEs.get(twoWaySQL), npes, null, 0);
+			new TwoWaySqlExecutor().selectByTwoWaySql(context, twoWaySQL, null, twoWaySqlMapToRetrieveNPEs.get(twoWaySQL), npes, null, 0, false);
 			for (IMendixObject npe : npes) {
 				// Store the related NPE in the RetrievedNPE map.
 				Long idValue = npe.getValue(context, IdValue.MemberNames.IdValue.toString());
@@ -309,7 +309,7 @@ public class BatchFetchHandler {
 	private void loadIds(IContext context, String twoWaySqlFileName, IMendixObject parameter) throws Exception {
 		List<IMendixObject> idList = new ArrayList<IMendixObject>();
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		twoWaySqlExecutor.selectByTwoWaySql(context, twoWaySqlFileName, parameter, FakeMendixObject.class.getName(), idList, null, 0);
+		twoWaySqlExecutor.selectByTwoWaySql(context, twoWaySqlFileName, parameter, FakeMendixObject.class.getName(), idList, null, 0, false);
 		if (idList.isEmpty()) {
 			return;
 		}

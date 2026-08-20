@@ -11,8 +11,8 @@ package twowaysql.actions;
 
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
-import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
+import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
  * It iterates over the execution results of TwoWaySQL using a cursor. Since it invokes a callback for each record rather than loading the entire result set, processing can be performed with low memory usage.
@@ -50,7 +50,7 @@ public class CursorLoopOnTwoWaySql extends UserAction<java.lang.Long>
 	{
 		// BEGIN USER CODE
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		int count = twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, SqlParameter, ResultEntityType, null, CallBackMicroflow, 0);
+		int count = twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, SqlParameter, ResultEntityType, null, CallBackMicroflow, 0, false);
         return (long)count;
 		// END USER CODE
 	}

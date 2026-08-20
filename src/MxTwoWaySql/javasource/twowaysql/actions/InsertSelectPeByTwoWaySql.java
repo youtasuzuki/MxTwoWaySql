@@ -12,8 +12,8 @@ package twowaysql.actions;
 import java.util.ArrayList;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
-import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
+import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
  * Generate persistent entities from the TwoWaySQL result list and commit them.
@@ -54,7 +54,7 @@ public class InsertSelectPeByTwoWaySql extends UserAction<java.lang.Long>
 	{
 		// BEGIN USER CODE
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		int insertedCount = twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, InsertEntityType, new ArrayList<IMendixObject>(), beforeBachCommitCallBackMicroflow, BatchCommitSize.intValue());
+		int insertedCount = twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, InsertEntityType, new ArrayList<IMendixObject>(), beforeBachCommitCallBackMicroflow, BatchCommitSize.intValue(), false);
         return (long)insertedCount;
 		// END USER CODE
 	}

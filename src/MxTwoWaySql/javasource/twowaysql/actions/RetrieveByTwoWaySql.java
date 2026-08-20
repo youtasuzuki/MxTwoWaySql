@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
-import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
+import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
  * Execute the select 2WaySQL and load the results into a list of the specified non-persistent entities.
@@ -50,7 +50,7 @@ public class RetrieveByTwoWaySql extends UserAction<java.util.List<IMendixObject
 		// BEGIN USER CODE
         List<IMendixObject> resultList = new ArrayList<IMendixObject>();
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, ResultEntityType, resultList, null, 0);
+		twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, ResultEntityType, resultList, null, 0, false);
         return resultList;
 		// END USER CODE
 	}

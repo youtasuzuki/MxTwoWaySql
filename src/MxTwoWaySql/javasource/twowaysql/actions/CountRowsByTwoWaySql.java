@@ -11,58 +11,43 @@ package twowaysql.actions;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.mendix.core.Core;
 import com.mendix.systemwideinterfaces.core.IContext;
-import com.mendix.systemwideinterfaces.core.IMendixIdentifier;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.TwoWaySqlExecutor;
-import twowaysql.proxies.IdValue;
 
 /**
- * Retrieve Persistent-Entity by select 2WaySQL which returns ID column as 'IdValue'.
- * Based on the ID selected by 2WaySQL, PEs are retrieved in bulk using Core.retrieveIdList(IContext, List<IMendixIdentifier>).
+ * Execute the select 2WaySQL that sandwiched with 'SELECT COUNT(*) FROM (' and ') as count_table' and retuen the result.
+ * Please use non-persistent Entity for search condition.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql
  * Due to the specification of Dbflute, You have to use the parameter prefix 'pmb.'
  * 
  */
-public class RetrievePeByTwoWaySql extends UserAction<java.util.List<IMendixObject>>
+public class CountRowsByTwoWaySql extends UserAction<java.lang.Long>
 {
 	private final java.lang.String TwoWaySqlFileName;
 	private final IMendixObject Parameter;
-	private final java.lang.String ResultEntityType;
 
-	public RetrievePeByTwoWaySql(
+	public CountRowsByTwoWaySql(
 		IContext context,
 		java.lang.String _twoWaySqlFileName,
-		IMendixObject _parameter,
-		java.lang.String _resultEntityType
+		IMendixObject _parameter
 	)
 	{
 		super(context);
 		this.TwoWaySqlFileName = _twoWaySqlFileName;
 		this.Parameter = _parameter;
-		this.ResultEntityType = _resultEntityType;
 	}
 
 	@java.lang.Override
-	public java.util.List<IMendixObject> executeAction() throws Exception
+	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		List<IMendixObject> idList = new ArrayList<IMendixObject>();
+        List<IMendixObject> resultList = new ArrayList<IMendixObject>();
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, IdValue.entityName, idList, null, 0, false);
-
-		List<IMendixIdentifier> midList = new ArrayList<IMendixIdentifier>();
-		IContext c = getContext();
-		for (IMendixObject mo : idList) {
-			midList.add(Core.createMendixIdentifier((long)mo.getValue(c, "IdValue")));
-		}
-
-		List<IMendixObject> resultList = Core.retrieveIdList(getContext(), midList);
-		return resultList;
+		return (long)twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, null, resultList, null, 0, true);
 		// END USER CODE
 	}
 
@@ -73,7 +58,7 @@ public class RetrievePeByTwoWaySql extends UserAction<java.util.List<IMendixObje
 	@java.lang.Override
 	public java.lang.String toString()
 	{
-		return "RetrievePeByTwoWaySql";
+		return "CountRowsByTwoWaySql";
 	}
 
 	// BEGIN EXTRA CODE

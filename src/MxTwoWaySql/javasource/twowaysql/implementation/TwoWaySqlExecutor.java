@@ -81,13 +81,13 @@ public class TwoWaySqlExecutor {
 
 	public int selectByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter,
 			String resultEntityType, //
-			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize) throws Exception {
+			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows) throws Exception {
 		int recordCount;
 		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
 		if (extDataSourceName == null) {
 			recordCount = Core.dataStorage().executeWithConnection(context, connection -> {
 				int count = selectByTwoWaySql(connection, context, twoWaySqlFileName, parameter, resultEntityType,
-						resultList, callBackMicroflow, batchCommitSize);
+						resultList, callBackMicroflow, batchCommitSize, countRows);
 				return count;
 			});
 		} else {
@@ -98,7 +98,7 @@ public class TwoWaySqlExecutor {
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
 				recordCount = selectByTwoWaySql(con, context, twoWaySqlFileName, parameter, resultEntityType,
-						resultList, callBackMicroflow, batchCommitSize);
+						resultList, callBackMicroflow, batchCommitSize, countRows);
 			} catch (SQLException e) {
 				throw new MendixRuntimeException(e);
 			}
@@ -108,12 +108,16 @@ public class TwoWaySqlExecutor {
 
 	public int selectByTwoWaySql(Connection connection, IContext context, String twoWaySqlFileName,
 			IMendixObject parameter, String resultEntityType, //
-			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize) throws RuntimeException {
+			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows) throws RuntimeException {
 		int count = 0;
 		try {
-			setupResultEntityMemberNames(context, resultEntityType);
+			if (!countRows) {
+				setupResultEntityMemberNames(context, resultEntityType);
+			}
 			setupTwoWaySql(context, twoWaySqlFileName, parameter);
-
+			if (countRows) {
+				this.preparedSql = "SELECT COUNT(*) FROM ( " + this.preparedSql + " ) AS count_table";
+			}
 			try (PreparedStatement stmt = connection.prepareStatement(this.preparedSql)) {
 				setBindVariables(stmt);
 				setupSlowQueryDetection();
@@ -122,6 +126,10 @@ public class TwoWaySqlExecutor {
 					ResultSetMetaData rmd = rset.getMetaData();
 					int colCount = rmd.getColumnCount();
 					while ( rset.next()) {
+						if (countRows) {
+							count = rset.getInt(1);
+							break;
+						}
 						IMendixObject obj = readToMendixObject(context, resultEntityType, rset, colCount, rmd);
 						if (resultList != null) {
 							resultList.add(obj);

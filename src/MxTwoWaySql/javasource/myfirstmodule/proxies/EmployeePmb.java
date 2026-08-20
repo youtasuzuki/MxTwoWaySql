@@ -27,7 +27,8 @@ public class EmployeePmb implements com.mendix.systemwideinterfaces.core.IEntity
 		Address("Address"),
 		BirthDate("BirthDate"),
 		IsUseAbc("IsUseAbc"),
-		IsJapanese("IsJapanese");
+		IsJapanese("IsJapanese"),
+		RowCount("RowCount");
 
 		private final java.lang.String metaName;
 
@@ -257,6 +258,42 @@ public class EmployeePmb implements com.mendix.systemwideinterfaces.core.IEntity
 	public final void setIsJapanese(com.mendix.systemwideinterfaces.core.IContext context, java.lang.Boolean isjapanese)
 	{
 		getMendixObject().setValue(context, MemberNames.IsJapanese.toString(), isjapanese);
+	}
+
+	/**
+	 * @return value of RowCount
+	 */
+	public final java.lang.Integer getRowCount()
+	{
+		return getRowCount(getContext());
+	}
+
+	/**
+	 * @param context
+	 * @return value of RowCount
+	 */
+	public final java.lang.Integer getRowCount(com.mendix.systemwideinterfaces.core.IContext context)
+	{
+		return (java.lang.Integer) getMendixObject().getValue(context, MemberNames.RowCount.toString());
+	}
+
+	/**
+	 * Set value of RowCount
+	 * @param rowcount
+	 */
+	public final void setRowCount(java.lang.Integer rowcount)
+	{
+		setRowCount(getContext(), rowcount);
+	}
+
+	/**
+	 * Set value of RowCount
+	 * @param context
+	 * @param rowcount
+	 */
+	public final void setRowCount(com.mendix.systemwideinterfaces.core.IContext context, java.lang.Integer rowcount)
+	{
+		getMendixObject().setValue(context, MemberNames.RowCount.toString(), rowcount);
 	}
 
 	@java.lang.Override

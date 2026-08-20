@@ -128,6 +128,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.CallByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.CloseBatchFetchLoop.class);
     registrator.registerUserAction(twowaysql.actions.CommitTranOnExternalDataSource.class);
+    registrator.registerUserAction(twowaysql.actions.CountRowsByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.CursorLoopOnTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.DeletePeByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.EndTranOnExternalDataSource.class);
