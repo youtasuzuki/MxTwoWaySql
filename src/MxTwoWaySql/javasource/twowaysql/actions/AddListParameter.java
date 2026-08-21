@@ -15,13 +15,15 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
- * Specify the parameters by List for the in-clause
- * You can only use entity types as below.
- * - TwoWaySql.LongValue
- * - TwoWaySql.DecimalValue
- * - TwoWaySql.DateTimeValue
- * - TwoWaySql.BooleanValue
- * - TwoWaySql.StringValue
+ * Specify the parameters by List for the in-clause or 2Way 'For' syntax.
+ * For in-clause , you can only use entity types as below.
+ * - TwoWaySQL.LongValue
+ * - TwoWaySQL.DecimalValue
+ * - TwoWaySQL.DateTimeValue
+ * - TwoWaySQL.BooleanValue
+ * - TwoWaySQL.StringValue
+ * For 2Way 'For' syntax, Lists of other entities can also be used.
+ * 
  */
 public class AddListParameter extends UserAction<java.lang.Boolean>
 {

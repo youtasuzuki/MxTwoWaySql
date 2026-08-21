@@ -192,6 +192,26 @@ public final class Microflows
 	{
 		aCT_ExtDsUpdateTestBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_InClauseTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_InClauseTest");
+		return builder;
+	}
+
+	public static void aCT_InClauseTest(IContext context)
+	{
+		aCT_InClauseTestBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_InsertBulkTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_InsertBulkTest");
+		return builder;
+	}
+
+	public static void aCT_InsertBulkTest(IContext context)
+	{
+		aCT_InsertBulkTestBuilder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_InsertSelectByTwoWaySql_TESTBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_InsertSelectByTwoWaySql_TEST");

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -42,6 +43,7 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixIdentifier;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 
 import twowaysql.integration.ExtDataSourceBinder;
 import twowaysql.integration.ExtDataSourceWrapper;
@@ -51,7 +53,7 @@ public class TwoWaySqlExecutor {
 
 	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	private String preparedSql;
-	private Object[] bindVariables;
+	private Object[] bindVariables = new Object[0];
 	private Long dsoptions = 0L;
 	private Map<String, String> resultEntityMemberNames = new HashMap<String, String>();
 	private static Map<String, String> sqlMap = new ConcurrentHashMap<String, String>();
@@ -170,6 +172,10 @@ public class TwoWaySqlExecutor {
 						+ toStringBindVariables() + "\nResultCount=" + count);
 			}
 		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("selectByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + count);
+			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		} finally {
@@ -245,7 +251,7 @@ public class TwoWaySqlExecutor {
 	public int updateByTwoWaySql(Connection connection, IContext context, String twoWaySqlFileName,
 			IMendixObject parameter)
 			throws RuntimeException {
-		int count;
+		int count = 0;
 		try {
 			setupTwoWaySql(context, twoWaySqlFileName, parameter);
 
@@ -260,6 +266,10 @@ public class TwoWaySqlExecutor {
 						+ toStringBindVariables() + "\nResultCount=" + count);
 			}
 		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("updateByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+					+ toStringBindVariables() + "\nResultCount=" + count);
+			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		}
@@ -328,6 +338,10 @@ public class TwoWaySqlExecutor {
 						+ toStringBindVariables() + "\nResultCount=" + resultList.size());
 			}
 		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("callByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + resultList.size());
+			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		}
@@ -380,6 +394,10 @@ public class TwoWaySqlExecutor {
 						+ toStringBindVariables() + "\nResultCount=" + count);
 			}
 		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("deleteByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + count);
+			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		}
@@ -497,6 +515,10 @@ public class TwoWaySqlExecutor {
 						+ toStringBindVariables() + "\nResultCount=" + count);
 			}
 		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("exportCsvByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + count);
+			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		}
@@ -533,7 +555,7 @@ public class TwoWaySqlExecutor {
 		return bindValStr.toString();
 	}
 
-	private SimpleMapPmb<Object> convertIMendixObject2SimpleMapPmb(IMendixObject mp, IContext context) {
+	private SimpleMapPmb<Object> convertIMendixObject2SimpleMapPmb(IMendixObject mp, IContext context) throws Exception {
 		SimpleMapPmb<Object> mapPmb = new SimpleMapPmb<Object>();
 		if (mp != null) {
 			Map<String, ? extends IMendixObjectMember<?>> momMap = mp.getMembers(context);
@@ -547,12 +569,25 @@ public class TwoWaySqlExecutor {
 				Object o = contextParameters.get(key);
 				if (o instanceof List) {
 					List<IMendixObject> orglist = (List<IMendixObject>) o;
-					ArrayList<Object> newlist = new ArrayList<Object>();
-					for (IMendixObject olo : orglist) {
-						Object oloVal = olo.getValue(context, "Value");
-						newlist.add(mxParam2DbfluteParam(oloVal));
+					if (orglist.size() > 0 && orglist.get(0).getMetaObject().getName().endsWith("Value")
+											&& orglist.get(0).getMetaObject().getMetaPrimitive("Value") != null
+											&& orglist.get(0).getMetaObject().getMetaPrimitives().size() == 1) {
+						// Entity名がValueで終わっていてValueという項目のみであればin句用のListとみなして値のみを取り出す
+						ArrayList<Object> newlist = new ArrayList<Object>();
+						for (IMendixObject olo : orglist) {
+							Object oloVal = olo.getValue(context, "Value");
+							newlist.add(mxParam2DbfluteParam(oloVal));
+						}
+						mapPmb.addParameter(key, newlist);
+					} else {
+						// in句用以外ならプロキシのリストに変換して設定
+						List<IMendixObject> moList = (List<IMendixObject>) o;
+						List<Object> proxyList = new ArrayList<Object>();
+						for (IMendixObject mo : moList) {
+							proxyList.add(toProxyObject(context, mo));
+						}
+						mapPmb.addParameter(key, proxyList);
 					}
-					mapPmb.addParameter(key, newlist);
 				} else {
 					mapPmb.addParameter(key, mxParam2DbfluteParam(o));
 				}
@@ -561,6 +596,19 @@ public class TwoWaySqlExecutor {
 			resetParameters();
 		}
 		return mapPmb;
+	}
+
+	private static Object toProxyObject(IContext mxcontext, IMendixObject mo) throws Exception {
+		if (mo == null) {
+			return null;
+		}
+		IMetaObject meta = mo.getMetaObject();
+		String proxyClassName = meta.getModuleName().toLowerCase() + ".proxies."
+				+ meta.getName().replace(meta.getModuleName() + ".", "");
+		Class clazz = Class.forName(proxyClassName);
+		Method initializeer = clazz.getDeclaredMethod("initialize", IContext.class, IMendixObject.class);
+		Object proxy = initializeer.invoke(null, mxcontext, mo);
+		return proxy;
 	}
 
 	private Object mxParam2DbfluteParam(Object o) {
