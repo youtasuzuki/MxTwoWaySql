@@ -31,6 +31,7 @@ where
 - Due to Mendix's architecture regarding automatic ID generation, only association entities can be inserted using this function.  
 - In Linux-based environments such as MxCloud, the file system is case-sensitive; therefore, exercise caution when specifying folder and file names.
 - In this module, the DBFlute runtime is used solely to parse 2WaySQL and convert it into standard SQL; therefore, other DBFlute features are not supported.
+- Transactions for access to the internal database use the microflow's context.
 
 
 You can access not only the Mendix app's internal database but also external databases.
@@ -44,9 +45,48 @@ select
 from
  your_external_table
 ```
-Note: Transaction control defaults to auto-commit when accessing external data sources. Additionally, the JDBC driver to be used must be downloaded using Studio Pro's Java dependency definitions.
+Note:
+- Transaction control defaults to auto-commit when accessing external data sources. If you need to use transactions for external database access, you can control the start and end/abend of the transaction from a microflow using the actions located in the `JavaActions/Transaction` folder.
+- The JDBC driver to be used must be downloaded using Studio Pro's Java dependency definitions.
 
 A simple sample is included in the `_Sample` folder, so we recommend checking it first.
+
+# Advanced usages
+- 'in' clause with AddListParameter action
+```
+select
+	"name","address","birthdate","id" as IdValue
+from
+	"yourModule$employee"
+/*BEGIN*/
+where
+    -- Before calling the RetrieveByTwoWaySql action,
+    --  use the AddListParameter action to set a list containing three TwoWaySQL.StringValue objects -with the values ​​'Liam', 'Noah', and 'James'—under the name 'NameList'.
+	/*IF pmb.NameList != null*/
+	"name" in /*pmb.NameList*/('Liam','Noah','James')
+	/*END*/
+/*END*/
+```
+- Perform a batch insert using the 2Way 'FOR-NEXT-END' construct
+```
+insert into employee_on_external_db
+(
+    name,
+    address
+)
+values
+-- Before calling UpdateByTwoWaySql,
+--  use the AddListParameter action to set the list of employee entities (from your application) that you wish to insert in bulk, under the name "EmployeeList".
+-- Since there is a limit on the length of SQL statements in the DBMS, it is recommended to split the data into appropriate batch sizes for execution.
+-- You cannot insert data into the Mendix internal database.
+/*FOR pmb.EmployeeList*/
+/*NEXT ','*/( 
+    /*#current.name*/'test_name',
+    /*#current.address*/'test_address'
+)
+/*END*/
+
+```
 
 # Restrictions
 - To maintain simplicity, the current internal implementation for creating a DataSource supports only the standard, classic method using a username and password with `HikariDataSource`. However, since the public `twowaysql.integration.putExtDataSource(name, dataSource)` method allows you to configure a data source externally, you can set up your own data source —such as one authenticated via mTLS/TCPO, Auth 2.0, etc— from outside the library. Please refer to the sample implementation of RegisterOracleMtlsExternalDataSource.
