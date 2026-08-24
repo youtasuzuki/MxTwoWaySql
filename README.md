@@ -61,7 +61,7 @@ from
 /*BEGIN*/
 where
     -- Before calling the RetrieveByTwoWaySql action,
-    --  use the AddListParameter action to set a list containing three TwoWaySQL.StringValue objects -with the values ​​'Liam', 'Noah', and 'James'—under the name 'NameList'.
+    --  use the AddListParameter action to set a list containing three TwoWaySQL.StringValue objects -with the values ​like ​'Liam', 'Noah', and 'James'—under the name 'NameList'.
 	/*IF pmb.NameList != null*/
 	"name" in /*pmb.NameList*/('Liam','Noah','James')
 	/*END*/
