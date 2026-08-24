@@ -724,9 +724,16 @@ public class TwoWaySqlExecutor {
 	 * @throws IOException
 	 */
 	public static String readSql(String sqlFile) throws IOException {
-		String sqlString = sqlMap.get(sqlFile);
-		if (sqlString != null) {
-			return sqlString;
+		String sqlString = null;
+		if (logger.isDebugEnabled()) {
+			sqlMap.clear(); // デバッグモードでは毎回読み込むのでキャッシュしない
+		} else {
+			// デバッグモードでは毎回読み込むのでキャッシュしない
+			sqlString = sqlMap.get(sqlFile);
+			if (sqlString != null) {
+				//logger.info("readSql: Cache hit sqlFile=" + sqlFile);
+				return sqlString;
+			}
 		}
 
 		StringBuilder sql = new StringBuilder();
@@ -744,7 +751,13 @@ public class TwoWaySqlExecutor {
 		}
 
 		sqlString = sql.toString();
-		sqlMap.put(sqlFile, sqlString);
+		if (logger.isDebugEnabled()) {
+			logger.debug("readSql: sqlFile=" + sqlFile + "\nSQL=\n" + sqlString);
+			// デバッグモードでは毎回読み込むのでキャッシュしない
+		} else {
+			//logger.info("readSql: Cached sqlFile=" + sqlFile);
+			sqlMap.put(sqlFile, sqlString);
+		}
 		return sqlString;
 	}
 
