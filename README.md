@@ -24,6 +24,7 @@ where
 	/*END*/
 /*END*/
 ```
+- For configure parameters such as 'pmb.Name' you can use parameter-adding actions like AddStringParameter.
 - It is recommended to organize files by creating subfolders based on module names and further categorizing them by function.  
 - Ensure the file encoding is UTF-8 (without BOM).  
 - Prefix filenames with "INS_", "SEL_", "UPD_", or "DEL_" to correspond with CRUD operations.  
