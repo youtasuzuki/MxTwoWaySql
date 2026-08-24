@@ -458,7 +458,7 @@ public class LogSubscriberForNanoProfiler extends LogSubscriber  {
 					acStat = new ActionStatistics(mfnameWithHash, sectionTime.getSectionName());
 					acStatMap.put(sectionTime.getSectionName(), acStat);
 				}
-				acStat.record(sectionTime.getExecutedCount() ,sectionTime.getAccumulatedNanos(), sectionTime.getSelectSqlCount(), sectionTime.getUpdateSqlCount());
+				acStat.record(sectionTime.getExecutedCount() ,sectionTime.getAccumulatedNanos(), sectionTime.getSelectSqlCount(), sectionTime.getUpdateSqlCount(), sectionTime.getSqlMap());
 			}
 		}
 	}
@@ -516,6 +516,9 @@ public class LogSubscriberForNanoProfiler extends LogSubscriber  {
 		sb.append("ip,configName,microflowName (sectionNamesHash),seq,sectionName,executedCount,totalNanos,averagelNanos");
 		if (myConfig.getCountSqls()) {
 			sb.append(",totalSelSqlCnt,totalUpdSqlCnt");
+			if (myConfig.getShowSqlStatements()) {
+				sb.append(",RecordedSqls");
+			}
 		}
 		sb.append("\r\n");
 		for (String mfName : microflowNameSet) {
@@ -533,6 +536,16 @@ public class LogSubscriberForNanoProfiler extends LogSubscriber  {
 				if (myConfig.getCountSqls()) {
 					sb.append(",").append(as.getTotalSelectSqlCount());
 					sb.append(",").append(as.getTotalUpdateSqlCount());
+					if (myConfig.getShowSqlStatements()) {
+						StringBuilder sqls = new StringBuilder();
+						for (Entry<String, Long> entry : as.getSqlMap().entrySet()) {
+							if (sqls.length() > 0) {
+								sqls.append("\r\n");
+							}
+							sqls.append(entry.getValue()).append(" times of : ").append(entry.getKey().replaceFirst("SELECT .*? FROM", "SELECT ... FROM").replaceAll("\"", "\"\""));
+						}
+						sb.append(",\"").append(sqls.toString()).append("\"");
+					}
 				}
 				sb.append("\r\n");
 			}
@@ -699,7 +712,7 @@ public class LogSubscriberForNanoProfiler extends LogSubscriber  {
 			return null;
 		}
 
-		@Override
+		//@Override
 		public Object enterRuntime(String arg0, String arg1, String arg2, Set<String> arg3, JSONObject arg4,
 				Long arg5) {
 			return null;
@@ -713,7 +726,7 @@ public class LogSubscriberForNanoProfiler extends LogSubscriber  {
 		public void finishRuntime(Object arg0, Long arg1) {			
 		}
 
-		@Override
+		//@Override
 		public void logClientData(JSONObject arg0, String arg1) {
 		}
 

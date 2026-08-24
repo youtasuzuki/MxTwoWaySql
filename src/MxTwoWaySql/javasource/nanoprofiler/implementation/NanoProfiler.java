@@ -146,9 +146,9 @@ public class NanoProfiler {
 			Map<String, Long> sectionSqlMap = sectionTime.getSqlMap();
 			if (sectionSqlMap.size() > 0) {
 				for (String sql : sectionSqlMap.keySet()) {
-					sb.append("      ").append(sectionSqlMap.get(sql)).append(" times of :").append(sql.replaceFirst("SELECT .*? FROM", "SELECT ... FROM")).append("\n");
+					sb.append("      ").append(sectionSqlMap.get(sql)).append(" times of : ").append(sql.replaceFirst("SELECT .*? FROM", "SELECT ... FROM")).append("\n");
 				}
-				sectionSqlMap.clear();
+				//sectionSqlMap.clear();	for ActionStatistics's record() method, don't clear sqlMap here. and leave it to the GC to clear it.
 			}
 		}
 		if (showMemoryUsage) {

@@ -6,13 +6,13 @@ package nanoprofiler.proxies;
 
 public enum LogLevels
 {
-	TRACE("d68512d6-f725-4793-8dce-286f903793e7"),
-	DEBUG("259a4c92-6593-4627-9a00-3759d5dd0069"),
-	INFO("6f5e1d54-d3e9-477a-8e30-f1414a37a537"),
-	WARNING("35f6a6f0-0785-4f13-9244-e87213507e72"),
-	ERROR("9569a474-a34b-4b80-8a44-af6d643ca824"),
-	CRITICAL("289bde5c-fe27-4247-bf88-619b146bec55"),
-	NONE("90e43a4f-6b2f-4cfb-a138-51204e4d3f64");
+	TRACE("f2d6f5ba-0a2b-41e5-8980-ba00c4e15f8f"),
+	DEBUG("f72967c2-999c-4d7e-9351-2aa9afd04c83"),
+	INFO("426e332d-e49f-4b4f-90d3-715ba538176f"),
+	WARNING("b1c771c5-fdb1-456f-9a74-2e2f52f5383d"),
+	ERROR("e09cf633-8591-41ab-b9da-5d7e960467c1"),
+	CRITICAL("4afa0211-191c-4f43-b3f5-1b9fb7ed4d55"),
+	NONE("8be0d6ff-0b42-4f25-a4c8-c366b0f7b803");
 
 	private final java.lang.String i18nCaptionKey;
 	
