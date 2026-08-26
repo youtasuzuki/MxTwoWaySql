@@ -17,6 +17,7 @@ import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
  * Generate persistent entities from the TwoWaySQL result list and commit them.
+ * It can also be used to transfer data from an external database to an internal database (Entity). By performing batch commits within a cursor loop, it operates at high speed while consuming minimal memory.
  * 
  * About 2WaySQL , See also
  * http://dbflute.seasar.org/ja/manual/function/ormapper/outsidesql/about.html#twowaysql

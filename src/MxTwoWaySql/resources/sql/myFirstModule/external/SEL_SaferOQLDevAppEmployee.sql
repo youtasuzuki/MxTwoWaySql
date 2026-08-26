@@ -4,3 +4,4 @@ select
  name, address, birthdate, ishoge, decval, intval
  from
  myfirstmodule$employee
+ order by name

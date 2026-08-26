@@ -202,6 +202,16 @@ public final class Microflows
 	{
 		aCT_InClauseTestBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_InLineCursorLoopTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_InLineCursorLoopTest");
+		return builder;
+	}
+
+	public static void aCT_InLineCursorLoopTest(IContext context)
+	{
+		aCT_InLineCursorLoopTestBuilder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_InsertBulkTestBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_InsertBulkTest");

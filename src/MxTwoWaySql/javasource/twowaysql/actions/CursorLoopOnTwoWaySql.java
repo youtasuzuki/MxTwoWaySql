@@ -15,7 +15,7 @@ import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
- * It iterates over the execution results of TwoWaySQL using a cursor. Since it invokes a callback for each record rather than loading the entire result set, processing can be performed with low memory usage.
+ * It iterates over the execution ResultSet of TwoWaySQL using a cursor operation. Since it invokes a callback for each record rather than loading the entire result set, processing can be performed with low memory usage.
  * Please use non-persistent Entity for search condition and search result.
  * 
  * About 2WaySQL , See also

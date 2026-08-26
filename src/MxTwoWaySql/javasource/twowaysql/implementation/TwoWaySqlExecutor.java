@@ -779,4 +779,85 @@ public class TwoWaySqlExecutor {
 					"SQL: " + preparedSql + "\nPARAMS:" + toStringBindVariables());
 		}
 	}
+	
+	private class InLineCursorLoopStatus {
+		public Connection connection;
+		public PreparedStatement statement;
+		public ResultSet resultSet;
+		public ResultSetMetaData resultSetMetaData;
+		public int columnCount;
+		public InLineCursorLoopStatus(Connection connection, PreparedStatement statement, ResultSet resultSet, ResultSetMetaData resultSetMetaData, int columnCount) {
+			this.connection = connection;
+			this.statement = statement;
+			this.resultSet = resultSet;
+			this.resultSetMetaData = resultSetMetaData;
+			this.columnCount = columnCount;
+		}
+	}
+	
+	private InLineCursorLoopStatus iclStatus = null;
+
+
+	public void openInLineCursor(IContext context, String twoWaySqlFileName, IMendixObject parameter) throws Exception {
+		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
+		if (extDataSourceName == null) {
+			throw new MendixRuntimeException("openInLineCursor is only available for external data source.");
+		}
+		ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+		if (ds == null) {
+			throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
+		}
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		ResultSetMetaData rmd = null;
+		int colCount = 0;
+		try {
+			con = ds.getConnection(context);
+			setupTwoWaySql(context, twoWaySqlFileName, parameter);
+			stmt = con.prepareStatement(this.preparedSql);
+			setBindVariables(stmt);
+			setupSlowQueryDetection();
+			rset = stmt.executeQuery();
+			reportSlowQuery();
+			rmd = rset.getMetaData();
+			colCount = rmd.getColumnCount();
+		} catch (Exception e) {
+			if (rset != null) {
+				rset.close();
+			}
+			if (stmt != null) {
+				stmt.close();
+			}
+			if (con != null) {
+				con.close();
+			}
+			throw e;
+		}
+		this.iclStatus = new InLineCursorLoopStatus(con, stmt, rset, rmd, colCount);
+	}
+	
+	public IMendixObject readNextInLineCursor(IContext context, String resultEntityType) throws Exception {
+		if (this.iclStatus == null) {
+			throw new MendixRuntimeException("InLineCursor is not opened.");
+		}
+		if (this.iclStatus.resultSet.next() == false) {
+			return null;
+		}
+		if (resultEntityMemberNames.size() == 0) {
+			setupResultEntityMemberNames(context, resultEntityType);
+		}
+		return readToMendixObject(context, resultEntityType, this.iclStatus.resultSet, this.iclStatus.columnCount, this.iclStatus.resultSetMetaData);
+	}
+	
+	public void closeInLineCursor() throws Exception {
+		if (this.iclStatus == null) {
+			throw new MendixRuntimeException("InLineCursor is not opened.");
+		}
+		this.iclStatus.resultSet.close();
+		this.iclStatus.statement.close();
+		this.iclStatus.connection.close();
+		this.iclStatus = null;
+	}
+
 }

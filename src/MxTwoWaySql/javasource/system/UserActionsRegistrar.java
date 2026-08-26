@@ -127,6 +127,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.BatchFetchLoopByTwoWaySQL.class);
     registrator.registerUserAction(twowaysql.actions.CallByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.CloseBatchFetchLoop.class);
+    registrator.registerUserAction(twowaysql.actions.CloseInLineCursor.class);
     registrator.registerUserAction(twowaysql.actions.CommitTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.CountRowsByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.CursorLoopOnTwoWaySql.class);
@@ -135,9 +136,11 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.ExportCsvByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.GetJoinee.class);
     registrator.registerUserAction(twowaysql.actions.GetNext.class);
+    registrator.registerUserAction(twowaysql.actions.GetNextByInLineCursor.class);
     registrator.registerUserAction(twowaysql.actions.GetRetrievedNPEs.class);
     registrator.registerUserAction(twowaysql.actions.HasNext.class);
     registrator.registerUserAction(twowaysql.actions.InsertSelectPeByTwoWaySql.class);
+    registrator.registerUserAction(twowaysql.actions.OpenInLineCursorByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.PeekNext.class);
     registrator.registerUserAction(twowaysql.actions.RegisterExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.RegisterOracleMtlsExternalDataSource.class);

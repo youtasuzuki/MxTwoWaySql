@@ -20,6 +20,11 @@ public class ExtDataSourceWrapper implements DataSource {
 		this.ds = ds;
 	}
 
+	public boolean isTransactionStarted(IContext context) {
+		Map<String, ExtConnectionWrapper> transactionMap = ExtDataSourceTransactionManager.getTransactionMap(context);
+		return transactionMap.containsKey(name);
+	}
+
 	public Connection getConnection(IContext context) throws SQLException {
 		// If thereis connection on context then return it, otherwise get a new connection from the underlying datasource
 		Map<String, ExtConnectionWrapper> transactionMap = ExtDataSourceTransactionManager.getTransactionMap(context);
