@@ -11,6 +11,8 @@ package twowaysql.actions;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.UserAction;
@@ -48,10 +50,19 @@ public class RetrieveByTwoWaySql extends UserAction<java.util.List<IMendixObject
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-        List<IMendixObject> resultList = new ArrayList<IMendixObject>();
+		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
+		if (mockDirective != null) {
+			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			java.util.List<IMendixObject> results = TwoWaySqlExecutor.mockRetrieveByTwoWaySql(getContext(), mockDirective, Parameter, ResultEntityType);
+			logger.warn("RetrieveByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + results.size() + " records.\n");
+			return results;
+		}
+
+		List<IMendixObject> resultList = new ArrayList<IMendixObject>();
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
-		twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, ResultEntityType, resultList, null, 0, false);
-        return resultList;
+		twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, ResultEntityType, resultList,
+				null, 0, false);
+		return resultList;
 		// END USER CODE
 	}
 
@@ -66,5 +77,6 @@ public class RetrieveByTwoWaySql extends UserAction<java.util.List<IMendixObject
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	// END EXTRA CODE
 }

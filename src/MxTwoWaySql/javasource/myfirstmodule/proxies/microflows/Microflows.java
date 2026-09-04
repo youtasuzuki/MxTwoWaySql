@@ -232,6 +232,26 @@ public final class Microflows
 	{
 		aCT_InsertSelectByTwoWaySql_TESTBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_MockRetrieveByTwoWaySqlBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_MockRetrieveByTwoWaySql");
+		return builder;
+	}
+
+	public static void aCT_MockRetrieveByTwoWaySql(IContext context)
+	{
+		aCT_MockRetrieveByTwoWaySqlBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ReadExcelFromFileBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ReadExcelFromFile");
+		return builder;
+	}
+
+	public static void aCT_ReadExcelFromFile(IContext context)
+	{
+		aCT_ReadExcelFromFileBuilder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ReDispTwoWaySqlTestPageBuilder(
 		myfirstmodule.proxies.EmployeePmb _employeePmb
 	)
@@ -379,6 +399,34 @@ public final class Microflows
 				_employeeTwoWaySqlResult
 			)
 			.execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder mOC_RetrieveEmployeeByTwoWaySqlBuilder(
+		java.lang.String _name,
+		java.lang.String _address,
+		java.lang.Long _intParam
+	)
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.MOC_RetrieveEmployeeByTwoWaySql");
+		builder = builder.withParam("Name", _name);
+		builder = builder.withParam("Address", _address);
+		builder = builder.withParam("IntParam", _intParam);
+		return builder;
+	}
+
+	public static java.util.List<myfirstmodule.proxies.EmployeeTwoWaySqlResult> mOC_RetrieveEmployeeByTwoWaySql(
+		IContext context,
+		java.lang.String _name,
+		java.lang.String _address,
+		java.lang.Long _intParam
+	)
+	{
+		Object result = mOC_RetrieveEmployeeByTwoWaySqlBuilder(
+				_name,
+				_address,
+				_intParam
+			)
+			.execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> myfirstmodule.proxies.EmployeeTwoWaySqlResult.initialize(context, obj));
 	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder nAV_DispTwoWaySqlSamplePageBuilder()
 	{

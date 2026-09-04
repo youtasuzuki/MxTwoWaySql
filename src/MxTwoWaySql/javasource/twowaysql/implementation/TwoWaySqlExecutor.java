@@ -57,6 +57,9 @@ public class TwoWaySqlExecutor {
 	private Long dsoptions = 0L;
 	private Map<String, String> resultEntityMemberNames = new HashMap<String, String>();
 	private static Map<String, String> sqlMap = new ConcurrentHashMap<String, String>();
+	public static final String MOCK_DIRECTIVE = "$$MOCK_";
+	public static final String MOCK_EXCEL_DIRECTIVE = MOCK_DIRECTIVE + "EXCEL$$";
+	public static final String MOCK_MICROFLOW_DIRECTIVE = MOCK_DIRECTIVE + "MICROFLOW$$";
 
 	private static ThreadLocal<Map<String, Object>> nextParameters = new ThreadLocal<Map<String, Object>>();
 
@@ -529,13 +532,16 @@ public class TwoWaySqlExecutor {
 			throws Exception {
 //		BoundDateDisplayStyle boundDateDisplayStyle = createBoundDateDisplayStyle(TimeZone.getDefault());
 		SimpleMapPmb<Object> pmb = convertIMendixObject2SimpleMapPmb(parameter, context);
-		String TwoWaySQL;
+		String twoWaySQL;
 		if (twoWaySqlFileName.startsWith("--")) {
-			TwoWaySQL = twoWaySqlFileName;
+			twoWaySQL = twoWaySqlFileName;
 		} else {
-			TwoWaySQL = readSql(twoWaySqlFileName);
+			twoWaySQL = readSql(twoWaySqlFileName);
 		}
-		setupTwoWaySql2PreparedSql(new DefaultSqlAnalyzerFactory(), TwoWaySQL, pmb/*, boundDateDisplayStyle*/);
+		if (twoWaySQL.startsWith(MOCK_DIRECTIVE)) {
+			throw new MendixRuntimeException("MOCK functionis are not allowed on the Action you are using.");
+		}
+		setupTwoWaySql2PreparedSql(new DefaultSqlAnalyzerFactory(), twoWaySQL, pmb/*, boundDateDisplayStyle*/);
 	}
 
 	private void setBindVariables(PreparedStatement stmt) throws Exception {
@@ -761,6 +767,9 @@ public class TwoWaySqlExecutor {
 		return sqlString;
 	}
 
+	/*
+	 * Additional functions for slow query detection
+	 */
 	private static long slowQueryThresholdMillis = -1;
 	private long queryStartTime;
 
@@ -779,7 +788,10 @@ public class TwoWaySqlExecutor {
 					"SQL: " + preparedSql + "\nPARAMS:" + toStringBindVariables());
 		}
 	}
-	
+
+	/*
+	 * Additional functions for InLineCursorLoop
+	 */
 	private class InLineCursorLoopStatus {
 		public Connection connection;
 		public PreparedStatement statement;
@@ -796,7 +808,6 @@ public class TwoWaySqlExecutor {
 	}
 	
 	private InLineCursorLoopStatus iclStatus = null;
-
 
 	public void openInLineCursor(IContext context, String twoWaySqlFileName, IMendixObject parameter) throws Exception {
 		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
@@ -858,6 +869,50 @@ public class TwoWaySqlExecutor {
 		this.iclStatus.statement.close();
 		this.iclStatus.connection.close();
 		this.iclStatus = null;
+	}
+
+	/*
+	 * Additional functions for mocking
+	 */
+	public interface TwoWaySqlMocker {
+		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, String resultEntityType) throws Exception;
+	}
+
+	private static TwoWaySqlMocker twoWaySqlMocker = null;
+
+	public static String getMockDirective(String twoWaySqlFileName) throws IOException {
+		if (!twoWaySqlFileName.startsWith("--")) {
+			String twoWaySQL = TwoWaySqlExecutor.readSql(twoWaySqlFileName);
+			if (twoWaySQL.startsWith(TwoWaySqlExecutor.MOCK_DIRECTIVE)) {
+				return twoWaySQL.lines().findFirst().orElse("");
+			}
+		}
+		return null;
+	}
+
+	public static java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, String resultEntityType) throws Exception {
+		if (twoWaySqlMocker == null) {
+			try {
+				Class<?> mockerClass = Class.forName("twowaysqlmocker.implementation.TwoWaySqlMockerImpl");
+				twoWaySqlMocker = (TwoWaySqlMocker)mockerClass.getDeclaredConstructor().newInstance();
+			} catch (Exception e) {
+				throw new MendixRuntimeException("TwoWaySqlMocker is not set and TwoWaySqlMockerImpl class is not found.", e);
+			}
+		}
+		java.util.List<IMendixObject> resultList = null;
+		try {
+			HashMap<String, Object> paramMap = new HashMap<String, Object>();
+			paramMap.putAll(getNextParameters());
+			Map<String, ? extends IMendixObjectMember<?>> momMap = actionParameter.getMembers(context);
+			for (String key : momMap.keySet()) {
+				// MOCKなのでmxParam2DbfluteParam()でのタイムゾーン調整は省略
+				paramMap.put(key, momMap.get(key).getValue(context));
+			}
+			resultList = twoWaySqlMocker.mockRetrieveByTwoWaySql(context, mockDirective, paramMap, resultEntityType);
+		} finally {
+			resetParameters();
+		}
+		return resultList;
 	}
 
 }

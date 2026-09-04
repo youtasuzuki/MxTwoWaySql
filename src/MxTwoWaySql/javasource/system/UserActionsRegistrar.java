@@ -152,5 +152,6 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.StartTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.TestTwoWaySqls.class);
     registrator.registerUserAction(twowaysql.actions.UpdateByTwoWaySql.class);
+    registrator.registerUserAction(twowaysqlmocker.actions.ReadExcelFromFile.class);
   }
 }
