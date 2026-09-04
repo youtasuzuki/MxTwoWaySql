@@ -87,6 +87,26 @@ values
 /*END*/
 
 ```
+- Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql` to return data/count from Excel.
+```
+$$MOCK_EXCEL$$ $RESOURCES/sql/mockdata/YourMockData.xlsx
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-- This directive loads mock data from an Excel (xlsx) file and returns it in place of actual SQL execution results.
+-- It must be placed at the very beginning of the SQL file.
+-- Do not prefix it with '-- '; it is intentionally designed so that it cannot be executed as SQL, in order to prevent accidental execution.
+-- Data mapping is performed by matching the column names in the first row of the Excel file with the entity's attribute names.
+-- While the Excel file path must be specified as a full path, the `$HOME` variable (user's home directory) and the `$RESOURCES` variable (the deployment's `resources` directory) can be used. And to ensure compatibility with Linux environments, it is recommended to use `/` as the separator, even on Windows.
+-- To use this feature, the TwoWaySQLMocker module must be included in the application.
+```
+- Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql` to call mocker Microflow.
+```
+$$MOCK_MICROFLOW$$ YourModule.MOC_YourRetrieveByTwoWaySql
+-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-- This directive calls a specified "mocker" Microflow and returns its return value instead of the actual SQL execution result.
+-- It must be placed at the very beginning of the SQL file.
+-- Do not prefix it with '-- '; it is intentionally designed so that it cannot be executed as SQL, in order to prevent accidental execution.
+-- To use this feature, the TwoWaySQLMocker module must be included in the application.
+```
 
 # Restrictions
 - To maintain simplicity, the current internal implementation for creating a DataSource supports only the standard, classic method using a username and password with `HikariDataSource`. However, since the public `twowaysql.integration.putExtDataSource(name, dataSource)` method allows you to configure a data source externally, you can set up your own data source —such as one authenticated via mTLS/TCPO, Auth 2.0, etc— from outside the library. Please refer to the sample implementation of RegisterOracleMtlsExternalDataSource.
