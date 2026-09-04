@@ -11,6 +11,8 @@ package twowaysql.actions;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.UserAction;
@@ -45,6 +47,14 @@ public class CountRowsByTwoWaySql extends UserAction<java.lang.Long>
 	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
+		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
+		if (mockDirective != null) {
+			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			java.lang.Long count = TwoWaySqlExecutor.mockCountRowsByTwoWaySql(getContext(), mockDirective, Parameter);
+			logger.warn("CountRowsByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + count + " records.\n");
+			return count;
+		}
+
         List<IMendixObject> resultList = new ArrayList<IMendixObject>();
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
 		return (long)twoWaySqlExecutor.selectByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter, null, resultList, null, 0, true);
@@ -62,5 +72,6 @@ public class CountRowsByTwoWaySql extends UserAction<java.lang.Long>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	// END EXTRA CODE
 }

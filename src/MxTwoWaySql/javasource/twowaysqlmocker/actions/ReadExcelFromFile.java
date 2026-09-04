@@ -15,6 +15,10 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysqlmocker.implementation.ExcelReader;
 
+/**
+ * This Action exposes the functionality of the TwoWaySQL '$$MOCK_EXCEL$$' directive to load Excel files.
+ * It can be used in conjunction with the '$$MOCK_MICROFLOW$$' directive to load specific Excel files based on conditional logic within a mock Microflow.
+ */
 public class ReadExcelFromFile extends UserAction<java.util.List<IMendixObject>>
 {
 	private final java.lang.String ExcelFilePath;

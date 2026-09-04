@@ -129,3 +129,34 @@ This module is the SQL-based counterpart to the existing SaferOQL module.
 Because it utilizes SQL directly, it supports the full range of SQL functionality; furthermore, it offers testing capabilities similar to SaferOQL, enabling the batch detection of discrepancies between the SQL and the domain model.
 It also includes features for connecting to external databases, allowing you to access them just as you would an internal database.
 With a built-in batch fetch loop for handling large datasets, it is highly recommended as a foundation for processing massive amounts of data.
+
+
+
+-----------------------------------------------------------------------------------------------
+
+TwoWaySQLモジュール用のモック機能サポート用モジュールです。
+TwoWaySQLモジュールをApache POIに依存させだいために、モック機能をTwoWaySQLMockerモジュールとして分離してリリースしています。
+そのためTwoWaySQLMocker単体では使用できません。TwoWaySQLモジュールと組み合わせて使用してください。
+
+This module provides mock functionality support for the TwoWaySQL module.
+To avoid making the TwoWaySQL module dependent on Apache POI, the mocking functionality has been separated into the TwoWaySQLMocker module.
+Therefore, TwoWaySQLMocker cannot be used on its own; please use it in conjunction with the TwoWaySQL module.
+
+-----------------------------------------------------------------------------------------------
+
+
+TwoWaySQLモジュール用のモック機能をTwoWaySQLMockerモジュールとして分離してリリースします。
+これが最初のリリースです。
+先ずはRetrieveByTwoWaySql、CountRowsByTwoWaySqlにモック機能を追加しました。詳細はTwoWaySQLモジュールのドキュメントを参照してください。
+
+We are releasing the mocking functionality for the TwoWaySQL module as a separate module named TwoWaySQLMocker.
+This is the initial release.
+To start, we have added mocking capabilities to `RetrieveByTwoWaySql` and `CountRowsByTwoWaySql`. Please refer to the TwoWaySQL module documentation for details.
+
+-----------------------------------------------------------------------------------------------
+
+我々はRetrieveByTwoWaySql、CountRowsByTwoWaySqlにモック機能を追加しました。モック機能を使用するにはTwoWaySQLMockerモジュールもマーケットプレイスからアプリに追加する必要があります。
+詳細はTwoWaySQLモジュールのドキュメントを参照してください。
+
+We have added mock functionality to RetrieveByTwoWaySql and CountRowsByTwoWaySql. To use this feature, you must also add the TwoWaySQLMocker module to your app from the marketplace.
+Please refer to the TwoWaySQL module documentation for details.

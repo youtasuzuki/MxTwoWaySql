@@ -876,6 +876,7 @@ public class TwoWaySqlExecutor {
 	 */
 	public interface TwoWaySqlMocker {
 		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, String resultEntityType) throws Exception;
+		public java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
 	}
 
 	private static TwoWaySqlMocker twoWaySqlMocker = null;
@@ -891,6 +892,28 @@ public class TwoWaySqlExecutor {
 	}
 
 	public static java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, String resultEntityType) throws Exception {
+		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
+		java.util.List<IMendixObject> resultList = null;
+		try {
+			resultList = twoWaySqlMocker.mockRetrieveByTwoWaySql(context, mockDirective, paramMap, resultEntityType);
+		} finally {
+			resetParameters();
+		}
+		return resultList;
+	}
+
+	public static java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter) throws Exception {
+		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
+		java.lang.Long count = null;
+		try {
+			count = twoWaySqlMocker.mockCountRowsByTwoWaySql(context, mockDirective, paramMap);
+		} finally {
+			resetParameters();
+		}
+		return count;
+	}
+
+	private static HashMap<String, Object> prepareCallMocker(IContext context, IMendixObject actionParameter) {
 		if (twoWaySqlMocker == null) {
 			try {
 				Class<?> mockerClass = Class.forName("twowaysqlmocker.implementation.TwoWaySqlMockerImpl");
@@ -899,20 +922,14 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("TwoWaySqlMocker is not set and TwoWaySqlMockerImpl class is not found.", e);
 			}
 		}
-		java.util.List<IMendixObject> resultList = null;
-		try {
-			HashMap<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.putAll(getNextParameters());
-			Map<String, ? extends IMendixObjectMember<?>> momMap = actionParameter.getMembers(context);
-			for (String key : momMap.keySet()) {
-				// MOCKなのでmxParam2DbfluteParam()でのタイムゾーン調整は省略
-				paramMap.put(key, momMap.get(key).getValue(context));
-			}
-			resultList = twoWaySqlMocker.mockRetrieveByTwoWaySql(context, mockDirective, paramMap, resultEntityType);
-		} finally {
-			resetParameters();
+		HashMap<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.putAll(getNextParameters());
+		Map<String, ? extends IMendixObjectMember<?>> momMap = actionParameter.getMembers(context);
+		for (String key : momMap.keySet()) {
+			// MOCKなのでmxParam2DbfluteParam()でのタイムゾーン調整は省略
+			paramMap.put(key, momMap.get(key).getValue(context));
 		}
-		return resultList;
+		return paramMap;
 	}
 
 }
