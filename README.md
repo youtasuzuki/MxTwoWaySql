@@ -93,7 +93,7 @@ $$MOCK_EXCEL$$ $RESOURCES/sql/mockdata/YourMockData.xlsx
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 -- This directive loads mock data from an Excel (xlsx) file and returns it in place of actual SQL execution results.
 -- It must be placed at the very beginning of the SQL file.
--- Do not prefix it with '-- '; it is intentionally designed so that it cannot be executed as SQL, in order to prevent accidental execution.
+-- If prefixed with `-- `, mocking is disabled; this requirement enforces an explicit declaration that the SQL is in a mocked state. Since mocked SQL causes errors in `TwoSqlTestResult_Overview`, it can be screened prior to committing code or releasing the application.
 -- Data mapping is performed by matching the column names in the first row of the Excel file with the entity's attribute names.
 -- While the Excel file path must be specified as a full path, the `$HOME` variable (user's home directory) and the `$RESOURCES` variable (the deployment's `resources` directory) can be used. And to ensure compatibility with Linux environments, it is recommended to use `/` as the separator, even on Windows.
 -- To use this feature, the TwoWaySQLMocker module must be included in the application.
@@ -104,7 +104,7 @@ $$MOCK_MICROFLOW$$ YourModule.MOC_YourRetrieveByTwoWaySql
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 -- This directive calls a specified "mocker" Microflow and returns its return value instead of the actual SQL execution result.
 -- It must be placed at the very beginning of the SQL file.
--- Do not prefix it with '-- '; it is intentionally designed so that it cannot be executed as SQL, in order to prevent accidental execution.
+-- If prefixed with `-- `, mocking is disabled; this requirement enforces an explicit declaration that the SQL is in a mocked state. Since mocked SQL causes errors in `TwoSqlTestResult_Overview`, it can be screened prior to committing code or releasing the application.
 -- To use this feature, the TwoWaySQLMocker module must be included in the application.
 ```
 
