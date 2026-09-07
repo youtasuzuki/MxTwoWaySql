@@ -37,8 +37,8 @@ public class TwoWaySqlMockerImpl implements TwoWaySqlExecutor.TwoWaySqlMocker {
 			return (long) resultList.size();
 		} else if (mockDirective.startsWith(TwoWaySqlExecutor.MOCK_MICROFLOW_DIRECTIVE)) {
 			String microflowName = mockDirective.substring(TwoWaySqlExecutor.MOCK_MICROFLOW_DIRECTIVE.length()).trim();
-			Long count = Core.microflowCall(microflowName).inTransaction(true).withParams(paramMap).execute(context);
-			return count;
+			List<IMendixObject> resultList = Core.microflowCall(microflowName).inTransaction(true).withParams(paramMap).execute(context);
+			return (long) resultList.size();
 		}
 		throw new MendixRuntimeException("Unsupported mock directive: " + mockDirective);
 	}

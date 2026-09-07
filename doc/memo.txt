@@ -135,7 +135,7 @@ With a built-in batch fetch loop for handling large datasets, it is highly recom
 -----------------------------------------------------------------------------------------------
 
 TwoWaySQLモジュール用のモック機能サポート用モジュールです。
-TwoWaySQLモジュールをApache POIに依存させだいために、モック機能をTwoWaySQLMockerモジュールとして分離してリリースしています。
+TwoWaySQLモジュールをApache POIに依存させないために、モック機能をTwoWaySQLMockerモジュールとして分離してリリースしています。
 そのためTwoWaySQLMocker単体では使用できません。TwoWaySQLモジュールと組み合わせて使用してください。
 
 This module provides mock functionality support for the TwoWaySQL module.
@@ -149,7 +149,7 @@ TwoWaySQLモジュール用のモック機能をTwoWaySQLMockerモジュールとして分離してリリー
 これが最初のリリースです。
 先ずはRetrieveByTwoWaySql、CountRowsByTwoWaySqlにモック機能を追加しました。詳細はTwoWaySQLモジュールのドキュメントを参照してください。
 
-We are releasing the mocking functionality for the TwoWaySQL module as a separate module named TwoWaySQLMocker.
+We release the mocking functionality for the TwoWaySQL module as a separate module named TwoWaySQLMocker.
 This is the initial release.
 To start, we have added mocking capabilities to `RetrieveByTwoWaySql` and `CountRowsByTwoWaySql`. Please refer to the TwoWaySQL module documentation for details.
 
@@ -160,3 +160,24 @@ To start, we have added mocking capabilities to `RetrieveByTwoWaySql` and `Count
 
 We have added mock functionality to RetrieveByTwoWaySql and CountRowsByTwoWaySql. To use this feature, you must also add the TwoWaySQLMocker module to your app from the marketplace.
 Please refer to the TwoWaySQL module documentation for details.
+
+
+
+-----------------------------------------------------------------------------------------------
+
+これは指定されたモッカーのMicroflowをコールしてそのリターン値をSQLの実行結果の代わりに返すディレクティブです。
+必ずSQLファイルの先頭に記述する必要があります。
+'-- 'をつけた場合はモックされません。これはモック状態である事の明確な意思表示を強制するのためです。モック状態のSQLはTwoSqlTestResult_Overviewでエラーとなるためコミット前やリリース前にスクリーニングが可能です。
+Excelファイルの１行名の列名とEntityのアトリビュート名で項目マッピングが行われます。
+Excelファイルのパスはフルパスでの記述ですが、$HOME変数(ユーザーのホームディレクトリ)と$RESOURCES変数(デプロイ先のresourcesディレクトリ)が使用可能です。
+この機能を使用するためにはTwoWaySQLMockerモジュールがアプリに導入されている必要があります。
+
+-----------------------------------------------------------------------------------------------
+This directive calls a specified "mocker" Microflow and returns its return value instead of the actual SQL execution result.
+It must be placed at the very beginning of the SQL file.
+If prefixed with `-- `, mocking is disabled; this requirement enforces an explicit declaration that the SQL is in a mocked state. Since mocked SQL causes errors in `TwoSqlTestResult_Overview`, it can be screened prior to committing code or releasing the application.
+Field mapping is performed by matching the column names in the first row of the Excel file with the entity attribute names.
+While the Excel file path must be specified as a full path, the `$HOME` variable (user's home directory) and `$RESOURCES` variable (deployment resources directory) can be used.
+To use this feature, the `TwoWaySQLMocker` module must be installed in the application.
+-----------------------------------------------------------------------------------------------
+

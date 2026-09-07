@@ -58,6 +58,9 @@ public class TestTwoWaySqls extends UserAction<java.util.List<IMendixObject>>
 		String absolutePath = Core.getConfiguration().getResourcesPath() + System.getProperty("file.separator") + "sql";
 		List<File> files = findAllFile(absolutePath);
 		for (File file : files) {
+			if (file.isDirectory() || !file.getName().toLowerCase().endsWith(".sql")) {
+				continue;
+			}
 			TwoSqlTestResult twoSqlTestResult = new TwoSqlTestResult(getContext());
 			twoSqlTestResult.setFilePath(file.getAbsolutePath());
 			twoSqlTestResult.setRelativePath(file.getAbsolutePath().replace('\\', '/').replaceFirst("^.*/sql/", ""));
