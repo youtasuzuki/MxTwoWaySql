@@ -28,7 +28,8 @@ public class EmployeePmb implements com.mendix.systemwideinterfaces.core.IEntity
 		BirthDate("BirthDate"),
 		IsUseAbc("IsUseAbc"),
 		IsJapanese("IsJapanese"),
-		RowCount("RowCount");
+		RowCount("RowCount"),
+		GridState("GridState");
 
 		private final java.lang.String metaName;
 
@@ -294,6 +295,42 @@ public class EmployeePmb implements com.mendix.systemwideinterfaces.core.IEntity
 	public final void setRowCount(com.mendix.systemwideinterfaces.core.IContext context, java.lang.Integer rowcount)
 	{
 		getMendixObject().setValue(context, MemberNames.RowCount.toString(), rowcount);
+	}
+
+	/**
+	 * @return value of GridState
+	 */
+	public final java.lang.String getGridState()
+	{
+		return getGridState(getContext());
+	}
+
+	/**
+	 * @param context
+	 * @return value of GridState
+	 */
+	public final java.lang.String getGridState(com.mendix.systemwideinterfaces.core.IContext context)
+	{
+		return (java.lang.String) getMendixObject().getValue(context, MemberNames.GridState.toString());
+	}
+
+	/**
+	 * Set value of GridState
+	 * @param gridstate
+	 */
+	public final void setGridState(java.lang.String gridstate)
+	{
+		setGridState(getContext(), gridstate);
+	}
+
+	/**
+	 * Set value of GridState
+	 * @param context
+	 * @param gridstate
+	 */
+	public final void setGridState(com.mendix.systemwideinterfaces.core.IContext context, java.lang.String gridstate)
+	{
+		getMendixObject().setValue(context, MemberNames.GridState.toString(), gridstate);
 	}
 
 	@java.lang.Override

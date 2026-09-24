@@ -30,7 +30,8 @@ public class EmployeeTwoWaySqlResult implements com.mendix.systemwideinterfaces.
 		DecVal("DecVal"),
 		IntVal("IntVal"),
 		IdValue("IdValue"),
-		Department("Department");
+		Department("Department"),
+		EmployeeTwoWaySqlResult_EmployeePmb("MyFirstModule.EmployeeTwoWaySqlResult_EmployeePmb");
 
 		private final java.lang.String metaName;
 
@@ -368,6 +369,53 @@ public class EmployeeTwoWaySqlResult implements com.mendix.systemwideinterfaces.
 	public final void setDepartment(com.mendix.systemwideinterfaces.core.IContext context, java.lang.String department)
 	{
 		getMendixObject().setValue(context, MemberNames.Department.toString(), department);
+	}
+
+	/**
+	 * @throws com.mendix.core.CoreException
+	 * @return value of EmployeeTwoWaySqlResult_EmployeePmb
+	 */
+	public final myfirstmodule.proxies.EmployeePmb getEmployeeTwoWaySqlResult_EmployeePmb() throws com.mendix.core.CoreException
+	{
+		return getEmployeeTwoWaySqlResult_EmployeePmb(getContext());
+	}
+
+	/**
+	 * @param context
+	 * @return value of EmployeeTwoWaySqlResult_EmployeePmb
+	 * @throws com.mendix.core.CoreException
+	 */
+	public final myfirstmodule.proxies.EmployeePmb getEmployeeTwoWaySqlResult_EmployeePmb(com.mendix.systemwideinterfaces.core.IContext context) throws com.mendix.core.CoreException
+	{
+		myfirstmodule.proxies.EmployeePmb result = null;
+		com.mendix.systemwideinterfaces.core.IMendixIdentifier identifier = getMendixObject().getValue(context, MemberNames.EmployeeTwoWaySqlResult_EmployeePmb.toString());
+		if (identifier != null) {
+			result = myfirstmodule.proxies.EmployeePmb.load(context, identifier);
+		}
+		return result;
+	}
+
+	/**
+	 * Set value of EmployeeTwoWaySqlResult_EmployeePmb
+	 * @param employeetwowaysqlresult_employeepmb
+	 */
+	public final void setEmployeeTwoWaySqlResult_EmployeePmb(myfirstmodule.proxies.EmployeePmb employeetwowaysqlresult_employeepmb)
+	{
+		setEmployeeTwoWaySqlResult_EmployeePmb(getContext(), employeetwowaysqlresult_employeepmb);
+	}
+
+	/**
+	 * Set value of EmployeeTwoWaySqlResult_EmployeePmb
+	 * @param context
+	 * @param employeetwowaysqlresult_employeepmb
+	 */
+	public final void setEmployeeTwoWaySqlResult_EmployeePmb(com.mendix.systemwideinterfaces.core.IContext context, myfirstmodule.proxies.EmployeePmb employeetwowaysqlresult_employeepmb)
+	{
+		if (employeetwowaysqlresult_employeepmb == null) {
+			getMendixObject().setValue(context, MemberNames.EmployeeTwoWaySqlResult_EmployeePmb.toString(), null);
+		} else {
+			getMendixObject().setValue(context, MemberNames.EmployeeTwoWaySqlResult_EmployeePmb.toString(), employeetwowaysqlresult_employeepmb.getMendixObject().getId());
+		}
 	}
 
 	@java.lang.Override

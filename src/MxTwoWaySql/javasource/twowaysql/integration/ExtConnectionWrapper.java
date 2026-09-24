@@ -28,7 +28,12 @@ public class ExtConnectionWrapper implements Connection {
 
 	private Connection connection;
 	private boolean wasAutoCommit;
-	
+	private boolean testMode = false;
+
+	public void setTestMode(boolean testMode) {
+		this.testMode = testMode;
+	}
+
 	public ExtConnectionWrapper(Connection connection) {
 		this.connection = connection;
 		try {
@@ -40,11 +45,15 @@ public class ExtConnectionWrapper implements Connection {
 	}
 
 	public void closeConnection() throws SQLException {
+		if (this.testMode) {
+			logger.debug("[TwoWaySql] Suppressed closeConnection for test isolation.");
+			return;
+		}
 		connection.setAutoCommit(wasAutoCommit); // Restore the original auto-commit state		
 		connection.close();
 		connection = null;
 	}
-	
+
 	protected void finalize() {
 		// Ensure the connection is closed when the wrapper is garbage collected
 		if (connection != null) {
@@ -59,7 +68,7 @@ public class ExtConnectionWrapper implements Connection {
 			}
 		}
 	}
-	
+
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		return connection.unwrap(iface);
 	}
@@ -93,10 +102,18 @@ public class ExtConnectionWrapper implements Connection {
 	}
 
 	public void commit() throws SQLException {
+		if (this.testMode) {
+			logger.debug("[TwoWaySql] Suppressed commit for test isolation.");
+			return;
+		}
 		connection.commit();
 	}
 
 	public void rollback() throws SQLException {
+		if (this.testMode) {
+			logger.debug("[TwoWaySql] Suppressed rollback for test isolation.");
+			return;
+		}
 		connection.rollback();
 	}
 
@@ -305,7 +322,5 @@ public class ExtConnectionWrapper implements Connection {
 	public void setShardingKey(ShardingKey shardingKey) throws SQLException {
 		connection.setShardingKey(shardingKey);
 	}
-	
-	
-	
+
 }

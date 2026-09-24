@@ -1,3 +1,4 @@
+-- @TwoWaySQL@ 
 update "myfirstmodule$employee"
 set
 	"intval"="intval" + 1,

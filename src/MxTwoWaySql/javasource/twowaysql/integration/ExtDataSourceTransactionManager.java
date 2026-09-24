@@ -35,7 +35,8 @@ public class ExtDataSourceTransactionManager {
 			//transactionMap.put(dsName, conWrapper);
 			transactionMap.put(dsName, null);	// Mark the transaction as started for this datasource
 		} else {
-			throw new SQLException("Transaction already started for datasource: " + dsName);
+			//throw new SQLException("Transaction already started for datasource: " + dsName);
+			logger.warn("Transaction already started for datasource: " + dsName);
 		}
 	}
 

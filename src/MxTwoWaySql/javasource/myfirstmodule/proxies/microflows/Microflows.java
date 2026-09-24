@@ -281,6 +281,26 @@ public final class Microflows
 	{
 		aCT_TestRetrievePeByTwoWaySqlBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_TwoWaySqlSamplePage_2_SearchBuilder(
+		myfirstmodule.proxies.EmployeePmb _employeePmb
+	)
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_TwoWaySqlSamplePage_2_Search");
+		builder = builder.withParam("EmployeePmb", _employeePmb);
+		return builder;
+	}
+
+	public static java.util.List<myfirstmodule.proxies.EmployeeTwoWaySqlResult> aCT_TwoWaySqlSamplePage_2_Search(
+		IContext context,
+		myfirstmodule.proxies.EmployeePmb _employeePmb
+	)
+	{
+		Object result = aCT_TwoWaySqlSamplePage_2_SearchBuilder(
+				_employeePmb
+			)
+			.execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> myfirstmodule.proxies.EmployeeTwoWaySqlResult.initialize(context, obj));
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_UpdateTestBuilder(
 		myfirstmodule.proxies.EmployeePmb _employeePmb
 	)
@@ -437,6 +457,16 @@ public final class Microflows
 	public static void nAV_DispTwoWaySqlSamplePage(IContext context)
 	{
 		nAV_DispTwoWaySqlSamplePageBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder nAV_DispTwoWaySqlSamplePage_2Builder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.NAV_DispTwoWaySqlSamplePage_2");
+		return builder;
+	}
+
+	public static void nAV_DispTwoWaySqlSamplePage_2(IContext context)
+	{
+		nAV_DispTwoWaySqlSamplePage_2Builder().execute(context);
 	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder sUB_ExtDsUpdateSampleBuilder()
 	{

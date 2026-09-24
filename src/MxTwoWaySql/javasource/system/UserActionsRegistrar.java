@@ -137,6 +137,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.GetJoinee.class);
     registrator.registerUserAction(twowaysql.actions.GetNext.class);
     registrator.registerUserAction(twowaysql.actions.GetNextByInLineCursor.class);
+    registrator.registerUserAction(twowaysql.actions.GetOrderByFromGridState.class);
     registrator.registerUserAction(twowaysql.actions.GetRetrievedNPEs.class);
     registrator.registerUserAction(twowaysql.actions.HasNext.class);
     registrator.registerUserAction(twowaysql.actions.InsertSelectPeByTwoWaySql.class);
