@@ -60,6 +60,7 @@ public class TwoWaySqlExecutor {
 	public static final String MOCK_DIRECTIVE = "$$MOCK_";
 	public static final String MOCK_EXCEL_DIRECTIVE = MOCK_DIRECTIVE + "EXCEL$$";
 	public static final String MOCK_MICROFLOW_DIRECTIVE = MOCK_DIRECTIVE + "MICROFLOW$$";
+	public static final String MOCK_LOGGING_DIRECTIVE = MOCK_DIRECTIVE + "LOGGING$$";
 
 	private static ThreadLocal<Map<String, Object>> nextParameters = new ThreadLocal<Map<String, Object>>();
 
@@ -877,6 +878,7 @@ public class TwoWaySqlExecutor {
 	public interface TwoWaySqlMocker {
 		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, String resultEntityType) throws Exception;
 		public java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
+		public java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
 	}
 
 	private static TwoWaySqlMocker twoWaySqlMocker = null;
@@ -907,6 +909,17 @@ public class TwoWaySqlExecutor {
 		java.lang.Long count = null;
 		try {
 			count = twoWaySqlMocker.mockCountRowsByTwoWaySql(context, mockDirective, paramMap);
+		} finally {
+			resetParameters();
+		}
+		return count;
+	}
+
+	public static java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter) throws Exception {
+		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
+		java.lang.Long count = null;
+		try {
+			count = twoWaySqlMocker.mockUpdateByTwoWaySql(context, mockDirective, paramMap);
 		} finally {
 			resetParameters();
 		}

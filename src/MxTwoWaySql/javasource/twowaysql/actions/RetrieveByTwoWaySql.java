@@ -53,6 +53,7 @@ public class RetrieveByTwoWaySql extends UserAction<java.util.List<IMendixObject
 		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
 		if (mockDirective != null) {
 			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			TwoWaySqlExecutor.addParameter("TwoWaySqlFileName", TwoWaySqlFileName);
 			java.util.List<IMendixObject> results = TwoWaySqlExecutor.mockRetrieveByTwoWaySql(getContext(), mockDirective, Parameter, ResultEntityType);
 			logger.warn("RetrieveByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + results.size() + " records.\n");
 			return results;

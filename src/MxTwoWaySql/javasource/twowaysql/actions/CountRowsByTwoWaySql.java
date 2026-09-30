@@ -50,6 +50,7 @@ public class CountRowsByTwoWaySql extends UserAction<java.lang.Long>
 		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
 		if (mockDirective != null) {
 			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			TwoWaySqlExecutor.addParameter("TwoWaySqlFileName", TwoWaySqlFileName);
 			java.lang.Long count = TwoWaySqlExecutor.mockCountRowsByTwoWaySql(getContext(), mockDirective, Parameter);
 			logger.warn("CountRowsByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + count + " records.\n");
 			return count;

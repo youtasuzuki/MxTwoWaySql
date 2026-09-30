@@ -9,10 +9,12 @@
 
 package twowaysql.actions;
 
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
-import twowaysql.implementation.TwoWaySqlExecutor;
 import com.mendix.systemwideinterfaces.core.UserAction;
+import twowaysql.implementation.TwoWaySqlExecutor;
 
 /**
  * Perform a direct database update using 2WaySQL.
@@ -42,6 +44,15 @@ public class UpdateByTwoWaySql extends UserAction<java.lang.Long>
 	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
+		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
+		if (mockDirective != null) {
+			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			TwoWaySqlExecutor.addParameter("TwoWaySqlFileName", TwoWaySqlFileName);
+			java.lang.Long count = TwoWaySqlExecutor.mockUpdateByTwoWaySql(getContext(), mockDirective, Parameter);
+			logger.warn("UpdateByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + count + " records.\n");
+			return count;
+		}
+
 		TwoWaySqlExecutor twoWaySqlExecutor = new TwoWaySqlExecutor();
 		int updateCount = twoWaySqlExecutor.updateByTwoWaySql(getContext(), TwoWaySqlFileName, Parameter);
         return (long)updateCount;
@@ -59,5 +70,6 @@ public class UpdateByTwoWaySql extends UserAction<java.lang.Long>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	// END EXTRA CODE
 }
