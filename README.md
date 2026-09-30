@@ -109,7 +109,7 @@ $$MOCK_MICROFLOW$$ YourModule.MOC_YourRetrieveByTwoWaySql
 ```
 - Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql`/`UpdateByTwoWaySql` to output log its parameters.
 ```
-$LOGGING$$
+$$MOCK_LOGGING$$
 -- ^^^^^^^^^^
 -- This directive simply outputs the parameters to the log.
 -- It must be placed at the very beginning of the SQL file.
