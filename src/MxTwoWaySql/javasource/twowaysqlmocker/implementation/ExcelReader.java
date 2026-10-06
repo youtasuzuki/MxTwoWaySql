@@ -34,8 +34,16 @@ public class ExcelReader {
 			}
 		};
 
-		String replacedFilePath = excelFilePath.replace("$HOME", System.getProperty("user.home")).replace("$RESOURCES",
-				Core.getConfiguration().getResourcesPath().getAbsolutePath());
+		//String replacedFilePath = excelFilePath.replace("$HOME", System.getProperty("user.home")).replace("$RESOURCES",
+		//		Core.getConfiguration().getResourcesPath().getAbsolutePath());
+		String twsMockerEnv = System.getenv("TWSMOCKER") != null ? System.getenv("TWSMOCKER") : "";
+		String homeDir = System.getProperty("user.home") != null ? System.getProperty("user.home") : "";
+		String resourcesPath = Core.getConfiguration().getResourcesPath() != null
+				? Core.getConfiguration().getResourcesPath().getAbsolutePath()
+				: "";
+		String replacedFilePath = excelFilePath.replace("$TWSMOCKER", twsMockerEnv)
+				.replace("$HOME", homeDir)
+				.replace("$RESOURCES", resourcesPath);
 		XssfExcelReader excelReader = new XssfExcelReader(new File(replacedFilePath), sheetName, false,
 				myRowProcessor);
 		excelReader.read();
