@@ -726,11 +726,12 @@ public class TwoWaySqlExecutor {
 
 	/**
 	 * SQLファイルの読み込み
-	 * @param sqlFile
+	 * @param sqlFilePath
 	 * @return
 	 * @throws IOException
 	 */
-	public static String readSql(String sqlFile) throws IOException {
+	public static String readSql(String sqlFilePath) throws IOException {
+		String sqlFile = sqlFilePath.replace("\\", "/");
 		String sqlString = null;
 		if (logger.isDebugEnabled()) {
 			sqlMap.clear(); // デバッグモードでは毎回読み込むのでキャッシュしない

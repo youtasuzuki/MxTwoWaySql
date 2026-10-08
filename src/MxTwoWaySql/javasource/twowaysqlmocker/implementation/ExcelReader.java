@@ -41,7 +41,7 @@ public class ExcelReader {
 		String resourcesPath = Core.getConfiguration().getResourcesPath() != null
 				? Core.getConfiguration().getResourcesPath().getAbsolutePath()
 				: "";
-		String replacedFilePath = excelFilePath.replace("$TWSMOCKER", twsMockerEnv)
+		String replacedFilePath = excelFilePath.replace("\\", "/").replace("$TWSMOCKER", twsMockerEnv)
 				.replace("$HOME", homeDir)
 				.replace("$RESOURCES", resourcesPath);
 		XssfExcelReader excelReader = new XssfExcelReader(new File(replacedFilePath), sheetName, false,
