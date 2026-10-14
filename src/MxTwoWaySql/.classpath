@@ -30,6 +30,7 @@
 	<classpathentry kind="lib" path="vendorlib/jspecify-1.0.0.jar"/>
 	<classpathentry kind="lib" path="vendorlib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
 	<classpathentry kind="lib" path="vendorlib/log4j-api-2.24.3.jar"/>
+	<classpathentry kind="lib" path="vendorlib/ojdbc11-23.26.3.0.0.jar"/>
 	<classpathentry kind="lib" path="vendorlib/owasp-java-html-sanitizer-20260101.1.jar"/>
 	<classpathentry kind="lib" path="vendorlib/pdfbox-3.0.7.jar"/>
 	<classpathentry kind="lib" path="vendorlib/pdfbox-io-3.0.7.jar"/>

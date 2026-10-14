@@ -39,6 +39,11 @@ public final class Constants
 		return (java.lang.Long)Core.getConfiguration().getConstantValue("TwoWaySQL.DEFAULT_JOINEE_CACHE_SIZE");
 	}
 
+	public static boolean getEnableValidationOnStartup()
+	{
+		return (java.lang.Boolean)Core.getConfiguration().getConstantValue("TwoWaySQL.EnableValidationOnStartup");
+	}
+
 	/**
 	* No options for external data sources.
 	*/

@@ -188,6 +188,43 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
+	public java.util.List<IMendixObject> selectExtDbByStandardSql(IContext context, String extDataSourceName, String sql, List<Object> parameters,
+			String resultEntityType	 ) throws Exception {
+		java.util.List<IMendixObject> resultList = new ArrayList<IMendixObject>();
+		ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+		if (ds == null) {
+			throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
+		}
+		dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+		try (Connection con = ds.getConnection(context)) {
+			setupResultEntityMemberNames(context, resultEntityType);
+			try (PreparedStatement stmt = con.prepareStatement(sql)) {
+				if (parameters != null) {
+					for (int i = 0; i < parameters.size(); i++) {
+						stmt.setObject(i + 1, parameters.get(i));
+					}
+				}
+				setupSlowQueryDetection();
+				try (ResultSet rset = stmt.executeQuery()) {
+					reportSlowQuery();
+					ResultSetMetaData rmd = rset.getMetaData();
+					int colCount = rmd.getColumnCount();
+					while (rset.next()) {
+						IMendixObject obj = readToMendixObject(context, resultEntityType, rset, colCount, rmd);
+						resultList.add(obj);
+					}
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("selectExtDbByStandardSql: Sql=\n" + sql + "\nparameters="
+						+ parameters + "\nResultCount=" + resultList.size());
+			}
+		} catch (SQLException e) {
+			throw new MendixRuntimeException("selectExtDbByStandardSql: Sql=\n" + sql + "\nparameters=" + parameters, e);
+		}
+		return resultList;
+	}
+
 	public IMendixObject readToMendixObject(IContext context,String resultEntityType, ResultSet rset, int colCount, ResultSetMetaData rmd) throws SQLException {
 		IMendixObject obj = null;
 		if (FakeMendixObject.class.getName().equals(resultEntityType)) {

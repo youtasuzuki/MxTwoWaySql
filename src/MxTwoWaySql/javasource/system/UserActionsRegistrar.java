@@ -143,8 +143,10 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.InsertSelectPeByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.OpenInLineCursorByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.PeekNext.class);
+    registrator.registerUserAction(twowaysql.actions.RegisterCriteriaMapping.class);
     registrator.registerUserAction(twowaysql.actions.RegisterExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.RegisterOracleMtlsExternalDataSource.class);
+    registrator.registerUserAction(twowaysql.actions.RetrieveByCriteria.class);
     registrator.registerUserAction(twowaysql.actions.RetrieveById.class);
     registrator.registerUserAction(twowaysql.actions.RetrieveByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.RetrievePeByTwoWaySql.class);
