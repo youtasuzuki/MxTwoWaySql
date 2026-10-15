@@ -116,7 +116,11 @@ $$MOCK_LOGGING$$
 -- If prefixed with `-- `, mocking is disabled; this requirement enforces an explicit declaration that the SQL is in a mocked state. Since mocked SQL causes errors in `TwoSqlTestResult_Overview`, it can be screened prior to committing code or releasing the application.
 -- To use this feature, the TwoWaySQLMocker module must be included in the application.
 ```
-
+# Additional Features
+## Criteria
+- In version 2.10.0, we introduced a "Criteria" feature that allows access to an external database without the need to write SQL.
+This feature enables searches on a single table (without joins) using only "AND" conditions, all without requiring the manual writing of SQL statements.
+It also incorporates a mechanism designed to verify consistency with the database schema in advance. By registering the combinations of data sources, tables, and entities within the `AfterStartup` phase, you can use the "TwoSqlTestResult_Overview" screen to proactively detect any field mismatches. (Currently, this only supports checking for matches in field names.)
 # Restrictions
 - To maintain simplicity, the current internal implementation for creating a DataSource supports only the standard, classic method using a username and password with `HikariDataSource`. However, since the public `twowaysql.integration.putExtDataSource(name, dataSource)` method allows you to configure a data source externally, you can set up your own data source —such as one authenticated via mTLS/TCPO, Auth 2.0, etc— from outside the library. Please refer to the sample implementation of RegisterOracleMtlsExternalDataSource.
 
