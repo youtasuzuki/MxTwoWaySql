@@ -81,6 +81,14 @@ public final class Constants
 	}
 
 	/**
+	* Setting this to `false` allows you to omit `RegisterCriteriaMapping`, but a warning will continue to be issued.
+	*/
+	public static boolean getForceRegisterCriteriaMapping()
+	{
+		return (java.lang.Boolean)Core.getConfiguration().getConstantValue("TwoWaySQL.ForceRegisterCriteriaMapping");
+	}
+
+	/**
 	* Cardinality value to determine whether to use JOINEE CACHE. A percentage value from 1 to 100, where 100 means that all values are unique. Cache is enabled when the actual data Cardinality value is less than or equal to the specified value.
 	*/
 	public static java.lang.Long getJOINEE_CACHE_USE_THRESHOLD_CARDINALITY()

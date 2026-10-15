@@ -153,6 +153,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.RollbackTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.SetDefaultTimeZoneIdForCsv.class);
     registrator.registerUserAction(twowaysql.actions.StartTranOnExternalDataSource.class);
+    registrator.registerUserAction(twowaysql.actions.TestCriteriaMapping.class);
     registrator.registerUserAction(twowaysql.actions.TestTwoWaySqls.class);
     registrator.registerUserAction(twowaysql.actions.UpdateByTwoWaySql.class);
     registrator.registerUserAction(twowaysqlmocker.actions.ReadExcelFromFile.class);

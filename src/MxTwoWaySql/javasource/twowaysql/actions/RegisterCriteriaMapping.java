@@ -9,10 +9,18 @@
 
 package twowaysql.actions;
 
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.CriteriaMappingRegistry;
+import twowaysql.implementation.CriteriaMappingRegistry.CriteriaTestResult;
+import twowaysql.proxies.constants.Constants;
 
+/**
+ * You must use this action within an 'AfterStartup' microflow to register the combinations of data source names, table names, and entities (for both search criteria and results) to be used with 'RetrieveByCriteria'.
+ * You can verify the consistency of these registered combinations—comprising data source names, table names, and the entities used—via 'CriteriaMappingTestResult_Overview'.
+ */
 public class RegisterCriteriaMapping extends UserAction<java.lang.Boolean>
 {
 	private final java.lang.String ExternalDataSourceName;
@@ -46,7 +54,19 @@ public class RegisterCriteriaMapping extends UserAction<java.lang.Boolean>
 		}
 
 		CriteriaMappingRegistry registry = CriteriaMappingRegistry.getInstance();
-		return registry.registerMapping(ExternalDataSourceName, TableName, ParamOrDtoType);
+		registry.registerMapping(ExternalDataSourceName, TableName, ParamOrDtoType);
+
+		// 起動時検証フラグが有効な場合、即座に個別の整合性チェックを実行
+		if (enableValidationOnStartup) {
+			CriteriaTestResult result = registry.testSingleMapping(context, ExternalDataSourceName, TableName,
+					ParamOrDtoType);
+			if (!result.isSuccess()) {
+				logger.warn(
+						String.format("[Mapping Validation Failed] DS: %s, Table: %s, Entity: %s -> Error: %s",
+								ExternalDataSourceName, TableName, ParamOrDtoType, result.getErrorMessage()));
+			}
+		}
+		return true;
 		// END USER CODE
 	}
 
@@ -61,5 +81,7 @@ public class RegisterCriteriaMapping extends UserAction<java.lang.Boolean>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
+	static Boolean enableValidationOnStartup = Constants.getEnableValidationOnStartup();
 	// END EXTRA CODE
 }

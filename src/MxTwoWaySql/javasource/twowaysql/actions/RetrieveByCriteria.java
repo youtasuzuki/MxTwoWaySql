@@ -11,6 +11,8 @@ package twowaysql.actions;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
@@ -19,7 +21,12 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 import twowaysql.implementation.CriteriaMappingRegistry;
 import twowaysql.implementation.TwoWaySqlExecutor;
+import twowaysql.proxies.constants.Constants;
 
+/**
+ * You can search an external database using AND conditions without writing SQL. The data source name, table name, and the entities to be used (for search criteria and for results) must be registered via `RegisterCriteriaMapping` within an "AfterStartup" microflow.
+ * You can verify the consistency of these registered combinations—data source name, table name, and the entities used—by checking `CriteriaMappingTestResult_Overview`.
+ */
 public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>>
 {
 	private final java.lang.String ExternalDataSourceName;
@@ -66,10 +73,17 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		// 1. Check if the combination registered via AfterStartUp is valid.
 		registry = CriteriaMappingRegistry.getInstance();
 		if (!registry.isValidMapping(this.ExternalDataSourceName, this.TableName, this.ResultEntityType)) {
-			throw new com.mendix.systemwideinterfaces.MendixRuntimeException(
-					String.format("[Criteria Error] Unregistered mapping.(DS: %s, Table: %s, Entity: %s) : "
-							+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
-							this.ExternalDataSourceName, this.TableName, this.ResultEntityType));
+			if (forceRegisterCriteriaMapping) {
+				throw new com.mendix.systemwideinterfaces.MendixRuntimeException(
+						String.format("[Criteria Error] Unregistered mapping.(DS: %s, Table: %s, Entity: %s) : "
+								+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
+								this.ExternalDataSourceName, this.TableName, this.ResultEntityType));
+			} else {
+				logger.warn(String.format(
+						"[Criteria Warning] Unregistered mapping.(DS: %s, Table: %s, Entity: %s) : "
+								+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
+						this.ExternalDataSourceName, this.TableName, this.ResultEntityType));
+			}
 		}
 
 		// 2. Check whether the object passed to each Where/OrderBy is a DTO permitted for this table.
@@ -111,6 +125,8 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
+	static Boolean forceRegisterCriteriaMapping = Constants.getForceRegisterCriteriaMapping();
 	private IContext context;
 	private CriteriaMappingRegistry registry;
 
@@ -123,10 +139,17 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 
 		// Check if the combination of (DS, Table, ParamEntity) was registered during AfterStartUp.
 		if (!registry.isValidMapping(this.ExternalDataSourceName, this.TableName, paramEntityName)) {
+			if (forceRegisterCriteriaMapping) {
 			throw new MendixRuntimeException(
 					String.format("[Criteria Error] Unregistered mapping.(DS: %s, Table: %s, Param: %s Of %s) : "
 							+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
 							this.ExternalDataSourceName, this.TableName, paramEntityName, paramName));
+			} else {
+				logger.warn(String.format( 
+						"[Criteria Warning] Unregistered mapping.(DS: %s, Table: %s, Param: %s Of %s) : "
+								+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
+						this.ExternalDataSourceName, this.TableName, paramEntityName, paramName));
+			}
 		}
 	}
 
@@ -138,7 +161,7 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		IContext context = this.getContext();
 		IMetaObject meta = dto.getMetaObject();
 		for (IMetaPrimitive primitive : meta.getMetaPrimitives()) {
-			if (shouldSkipAttribute(primitive)) {
+			if (CriteriaMappingRegistry.shouldSkipAttribute(primitive)) {
 				continue;
 			}
 			String attrName = primitive.getName();
@@ -161,21 +184,6 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 				params.add(val);
 			}
 		}
-	}
-
-	private boolean shouldSkipAttribute(IMetaPrimitive primitive) {
-		String attrName = primitive.getName();
-		if (attrName.startsWith("_")) {
-			return true;
-		}
-		if (primitive.isVirtual()) {
-			return true;
-		}
-		return "id".equalsIgnoreCase(attrName) ||
-				"createdDate".equalsIgnoreCase(attrName) ||
-				"changedDate".equalsIgnoreCase(attrName) ||
-				"owner".equalsIgnoreCase(attrName) ||
-				"changedBy".equalsIgnoreCase(attrName);
 	}
 
 	private String toTableName() {

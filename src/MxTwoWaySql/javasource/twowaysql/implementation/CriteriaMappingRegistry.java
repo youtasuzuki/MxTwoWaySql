@@ -1,15 +1,23 @@
 package twowaysql.implementation;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mendix.core.Core;
+import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 import twowaysql.integration.ExtDataSourceBinder;
 
@@ -23,6 +31,10 @@ public class CriteriaMappingRegistry {
 
 	public static CriteriaMappingRegistry getInstance() {
 		return instance;
+	}
+
+	public List<MappingKey> getAllMappings() {
+		return new ArrayList<>(registeredMappings);
 	}
 
 	/**
@@ -48,7 +60,7 @@ public class CriteriaMappingRegistry {
 	}
 
 	// The class for holding keys to maintain the uniqueness of combinations internally.
-	private static class MappingKey {
+	public class MappingKey {
 		private final String dataSourceName;
 		private final String tableName;
 		private final String dtoType;
@@ -57,6 +69,18 @@ public class CriteriaMappingRegistry {
 			this.dataSourceName = dataSourceName.trim();
 			this.tableName = tableName.trim().toLowerCase(); // Normalize table names to lowercase.
 			this.dtoType = dtoType.trim();
+		}
+
+		public String getDataSourceName() {
+			return dataSourceName;
+		}
+
+		public String getTableName() {
+			return tableName;
+		}
+
+		public String getDtoType() {
+			return dtoType;
 		}
 
 		@Override
@@ -162,5 +186,131 @@ public class CriteriaMappingRegistry {
 	private static class TableMetadata {
 		String actualTableName;
 		Map<String, String> columnMap = new HashMap<>();
+	}
+
+	public static boolean shouldSkipAttribute(IMetaPrimitive primitive) {
+		String attrName = primitive.getName();
+		if (attrName.startsWith("_")) {
+			return true;
+		}
+		if (primitive.isVirtual()) {
+			return true;
+		}
+		return "id".equalsIgnoreCase(attrName) ||
+				"createdDate".equalsIgnoreCase(attrName) ||
+				"changedDate".equalsIgnoreCase(attrName) ||
+				"owner".equalsIgnoreCase(attrName) ||
+				"changedBy".equalsIgnoreCase(attrName);
+	}
+
+	// Single mapping test
+	public CriteriaTestResult testSingleMapping(IContext context, String dataSourceName, String tableName,
+			String paramOrDtoType) {
+		CriteriaTestResult result = new CriteriaTestResult(dataSourceName, tableName, paramOrDtoType);
+
+		try {
+			// 1. Verifying the existence of the Mendix MetaObject
+			IMetaObject metaObject = Core.getMetaObject(paramOrDtoType);
+			if (metaObject == null) {
+				throw new MendixRuntimeException("Entity type '" + paramOrDtoType + "' is not found in Mendix model.");
+			}
+
+			// 2. Retrieving DB table metadata (referencing via the reused caching mechanism)
+			TableMetadata tableMeta = getOrLoadTableMetadata(context, dataSourceName, tableName);
+			if (tableMeta == null || tableMeta.actualTableName == null) {
+				throw new MendixRuntimeException(
+						"Table '" + tableName + "' does not exist in DataSource '" + dataSourceName + "'.");
+			}
+
+			// 3. Check if the entity's attributes exist as database columns.
+			List<String> missingColumns = new ArrayList<>();
+			for (IMetaPrimitive primitive : metaObject.getMetaPrimitives()) {
+				if (shouldSkipAttribute(primitive)) {
+					continue;
+				}
+				String attrName = primitive.getName();
+				String matchedColumn = tableMeta.columnMap.get(attrName.toLowerCase());
+				if (matchedColumn == null) {
+					missingColumns.add(attrName);
+				}
+			}
+			if (!missingColumns.isEmpty()) {
+				throw new MendixRuntimeException(
+						"Attributes not found in DB table: " + String.join(", ", missingColumns));
+			}
+			result.setSuccess(true);
+		} catch (Exception e) {
+			result.setSuccess(false);
+			result.setErrorMessage(e.getMessage());
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			result.setStackTrace(sw.toString());
+		}
+
+		return result;
+	}
+
+	public class CriteriaTestResult {
+		String dataSourceName;
+		String tableName;
+		String paramOrDtoType;
+		Boolean isSuccess;
+		String errorMessage;
+		String stackTrace;
+
+		public CriteriaTestResult(String _dataSourceName, String _tableName, String _paramOrDtoType) {
+			this.dataSourceName = _dataSourceName;
+			this.tableName = _tableName;
+			this.paramOrDtoType = _paramOrDtoType;
+		}
+
+		public String getDataSourceName() {
+			return dataSourceName;
+		}
+
+		public void setDataSourceName(String dataSourceName) {
+			this.dataSourceName = dataSourceName;
+		}
+
+		public String getTableName() {
+			return tableName;
+		}
+
+		public void setTableName(String tableName) {
+			this.tableName = tableName;
+		}
+
+		public String getParamOrDtoType() {
+			return paramOrDtoType;
+		}
+
+		public void setParamOrDtoType(String paramOrDtoType) {
+			this.paramOrDtoType = paramOrDtoType;
+		}
+
+		public Boolean isSuccess() {
+			return isSuccess;
+		}
+
+		public void setSuccess(Boolean isSuccess) {
+			this.isSuccess = isSuccess;
+		}
+
+		public String getErrorMessage() {
+			return errorMessage;
+		}
+
+		public void setErrorMessage(String errorMessage) {
+			this.errorMessage = errorMessage;
+		}
+
+		public String getStackTrace() {
+			return stackTrace;
+		}
+
+		public void setStackTrace(String stackTrace) {
+			this.stackTrace = stackTrace;
+		}
+
 	}
 }

@@ -26,6 +26,17 @@ public final class Microflows
 	{
 		cB_emptyBuilder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder dS_CriteriaMappingTestResultBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("TwoWaySQL.DS_CriteriaMappingTestResult");
+		return builder;
+	}
+
+	public static java.util.List<twowaysql.proxies.CriteriaMappingTestResult> dS_CriteriaMappingTestResult(IContext context)
+	{
+		Object result = dS_CriteriaMappingTestResultBuilder().execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> twowaysql.proxies.CriteriaMappingTestResult.initialize(context, obj));
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder dS_Sample_Of_RetrieveByTwoWaySqlBuilder(
 		twowaysql.proxies.Sample1 _forSample1
 	)
