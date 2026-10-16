@@ -246,7 +246,7 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 			SortField f = fields.get(i);
 			if (i > 0)
 				orderBySql.append(", ");
-			orderBySql.append(f.column).append(f.isAsc ? " ASC" : " DESC");
+			orderBySql.append('"').append(f.column).append('"').append(f.isAsc ? " ASC" : " DESC");
 		}
 
 		return orderBySql.toString();
