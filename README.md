@@ -97,6 +97,7 @@ $$MOCK_EXCEL$$ $RESOURCES/sql/mockdata/YourMockData.xlsx
 -- Data mapping is performed by matching the column names in the first row of the Excel file with the entity's attribute names.
 -- While the Excel file path must be specified as a full path, the `$HOME` variable (user's home directory), the `$TWSMOCKER` variable (An environment variable with the same name) and the `$RESOURCES` variable (the deployment's `resources` directory) can be used. And to ensure compatibility with Linux environments, it is recommended to use `/` as the separator, even on Windows.
 -- To use this feature, the TwoWaySQLMocker module must be included in the application.
+-- Please specify date and time entries in Excel files using the ISO 8601 format.
 ```
 - Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql`/`UpdateByTwoWaySql` to call mocker Microflow.
 ```
