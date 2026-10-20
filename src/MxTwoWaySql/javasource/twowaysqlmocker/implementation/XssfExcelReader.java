@@ -70,6 +70,9 @@ public class XssfExcelReader {
 		}
 		@Override
 		public void endRow(int rowNum) {
+			if (rowData == null || rowData.isEmpty()) {
+				return;
+			}
 			rowProcessor.processRow(currentRowIndex, rowData);
 		}
 	}
