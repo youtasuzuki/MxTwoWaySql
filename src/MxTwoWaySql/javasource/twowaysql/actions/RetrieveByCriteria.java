@@ -9,6 +9,7 @@
 
 package twowaysql.actions;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import com.mendix.core.Core;
@@ -71,7 +72,6 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		context = this.getContext();
 
 		// 1. Check if the combination registered via AfterStartUp is valid.
-		registry = CriteriaMappingRegistry.getInstance();
 		if (!registry.isValidMapping(this.ExternalDataSourceName, this.TableName, this.ResultEntityType)) {
 			if (forceRegisterCriteriaMapping) {
 				throw new com.mendix.systemwideinterfaces.MendixRuntimeException(
@@ -94,7 +94,40 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		validateParamDto("WhereGT", this.WhereGT);
 		validateParamDto("OrderBy", this.OrderBy);
 
-		// 3. Constructing the WHERE clause and parameters
+		// 3. Mock application determination
+		targetDataSourceName = this.ExternalDataSourceName;
+		targetTableName = this.TableName;
+		CriteriaMappingRegistry.MockMapping mockMapping = CriteriaMappingRegistry.getInstance()
+				.getMockMapping(this.ExternalDataSourceName, this.TableName, this.ResultEntityType);
+		if (mockMapping != null) {
+			try {
+				Class<?> initializerClass = Class.forName("twowaysqlmocker.implementation.H2MockInitializer");
+				java.lang.reflect.Method prepareMethod = initializerClass.getMethod("prepareMockTable",
+						CriteriaMappingRegistry.MockMapping.class);
+				String h2TableName = (String) prepareMethod.invoke(null, mockMapping);
+
+				// Retrieve the internal data source name defined within H2MockInitializer
+				java.lang.reflect.Field dsNameField = initializerClass.getField("INTERNAL_MOCK_DS_NAME");
+				String internalDsName = (String) dsNameField.get(null);
+
+				// Replace the call target with the H2 data source name and internal table name.
+				targetDataSourceName = internalDsName;
+				targetTableName = h2TableName;
+				logger.warn("RetrieveByCriteria: Mock applied for " + this.TableName + " -> Routed to H2 table: " + targetTableName );
+			} catch (ClassNotFoundException e) {
+				logger.error(
+						"Mock mapping found, but twowaysqlmocker is not installed in this environment. Proceeding with original datasource.");
+				throw e;
+			} catch (InvocationTargetException e) {
+				logger.error("Failed to invoke H2 mock initializer for " + this.TableName, e.getCause());
+				throw (Exception)e.getCause();
+			} catch (Exception e) {
+				logger.error("Failed to initialize H2 mock table for " + this.TableName, e);
+				throw e;
+			}
+		}
+
+		// 4. Constructing the WHERE clause and parameters
 		StringBuilder whereSql = new StringBuilder(" WHERE 1=1 ");
 		List<Object> params = new ArrayList<>();
 
@@ -104,12 +137,12 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		appendConditions(whereSql, params, this.WhereGE, ">=");
 		appendConditions(whereSql, params, this.WhereGT, ">");
 
-		// 4. Constructing the ORDER BY clause (determining priority based on positive and negative numeric values)
+		// 5. Constructing the ORDER BY clause (determining priority based on positive and negative numeric values)
 		String orderBy = buildOrderBy(this.OrderBy);
 
-		// 5. Execute SQL with binding & generate/return the results as a list of `IMendixObject`s of type `ResultEntityType`.
+		// 6. Execute SQL with binding & generate/return the results as a list of `IMendixObject`s of type `ResultEntityType`.
 		String sql = "SELECT * FROM \"" + toTableName() + "\"" + whereSql.toString() + orderBy;
-		return new TwoWaySqlExecutor().selectExtDbByStandardSql(context, this.ExternalDataSourceName, sql, params,
+		return new TwoWaySqlExecutor().selectExtDbByStandardSql(context, targetDataSourceName, sql, params,
 				this.ResultEntityType);
 		// END USER CODE
 	}
@@ -128,7 +161,9 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	static Boolean forceRegisterCriteriaMapping = Constants.getForceRegisterCriteriaMapping();
 	private IContext context;
-	private CriteriaMappingRegistry registry;
+	private CriteriaMappingRegistry registry = CriteriaMappingRegistry.getInstance();
+	private String targetDataSourceName;
+	private String targetTableName;
 
 	// Common helper: Check if the Object passed as a parameter exists in the registered combinations.
 	private void validateParamDto(String paramName, IMendixObject dto) {
@@ -140,12 +175,12 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 		// Check if the combination of (DS, Table, ParamEntity) was registered during AfterStartUp.
 		if (!registry.isValidMapping(this.ExternalDataSourceName, this.TableName, paramEntityName)) {
 			if (forceRegisterCriteriaMapping) {
-			throw new MendixRuntimeException(
-					String.format("[Criteria Error] Unregistered mapping.(DS: %s, Table: %s, Param: %s Of %s) : "
-							+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
-							this.ExternalDataSourceName, this.TableName, paramEntityName, paramName));
+				throw new MendixRuntimeException(
+						String.format("[Criteria Error] Unregistered mapping.(DS: %s, Table: %s, Param: %s Of %s) : "
+								+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
+								this.ExternalDataSourceName, this.TableName, paramEntityName, paramName));
 			} else {
-				logger.warn(String.format( 
+				logger.warn(String.format(
 						"[Criteria Warning] Unregistered mapping.(DS: %s, Table: %s, Param: %s Of %s) : "
 								+ "Please register it using RegisterCriteriaMapping within AfterStartup.",
 						this.ExternalDataSourceName, this.TableName, paramEntityName, paramName));
@@ -187,13 +222,14 @@ public class RetrieveByCriteria extends UserAction<java.util.List<IMendixObject>
 	}
 
 	private String toTableName() {
-		return CriteriaMappingRegistry.getInstance().resolveTableName(context, ExternalDataSourceName, TableName);
+		return CriteriaMappingRegistry.getInstance().resolveTableName(context, targetDataSourceName, targetTableName);
 	}
 
 	private String toColumnName(String attrName) {
 		// Example: CustomerName -> customer_name
 		//return attrName.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
-		return CriteriaMappingRegistry.getInstance().resolveColumnName(context, ExternalDataSourceName, TableName, attrName);
+		return CriteriaMappingRegistry.getInstance().resolveColumnName(context, targetDataSourceName, targetTableName,
+				attrName);
 	}
 
 	// Dynamically generate an ORDER BY clause from an OrderBy parameter DTO.

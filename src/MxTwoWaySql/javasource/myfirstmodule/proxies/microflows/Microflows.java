@@ -95,6 +95,16 @@ public final class Microflows
 	{
 		aCT_CriteriaTest_2Builder().execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_CriteriaTest_3Builder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_CriteriaTest_3");
+		return builder;
+	}
+
+	public static void aCT_CriteriaTest_3(IContext context)
+	{
+		aCT_CriteriaTest_3Builder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_CursorLoopTestBuilder(
 		myfirstmodule.proxies.EmployeePmb _employeePmb
 	)

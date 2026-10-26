@@ -28,7 +28,7 @@ public class XssfExcelReader {
 		this.rowProcessor = rowProcessor;
 	}
 
-	public void read() throws Exception {
+	public boolean read() throws Exception {
 		try (OPCPackage pkg = OPCPackage.open(excelFile)) {
 			ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg, includePhoneticRuns);
 			XSSFReader reader = new XSSFReader(pkg);
@@ -45,9 +45,10 @@ public class XssfExcelReader {
 					XMLReader parser = XMLHelper.newXMLReader();
 					parser.setContentHandler(sheetHandler);
 					parser.parse(new org.xml.sax.InputSource(is));
-					break;
+					return true;
 				}
 			}
+			return false;
 		}
 	}
 

@@ -23,6 +23,7 @@
 	<classpathentry kind="lib" path="vendorlib/failureaccess-1.0.3.jar"/>
 	<classpathentry kind="lib" path="vendorlib/fontbox-3.0.7.jar"/>
 	<classpathentry kind="lib" path="vendorlib/guava-33.5.0-jre.jar"/>
+	<classpathentry kind="lib" path="vendorlib/h2-2.5.252.jar"/>
 	<classpathentry kind="lib" path="vendorlib/HikariCP-6.3.3.jar"/>
 	<classpathentry kind="lib" path="vendorlib/j2objc-annotations-3.1.jar"/>
 	<classpathentry kind="lib" path="vendorlib/java10-shim-20260101.1.jar"/>

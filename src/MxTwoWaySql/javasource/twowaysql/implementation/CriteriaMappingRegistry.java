@@ -1,7 +1,9 @@
 package twowaysql.implementation;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -14,17 +16,23 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+import com.mendix.thirdparty.org.json.JSONArray;
+import com.mendix.thirdparty.org.json.JSONObject;
 
 import twowaysql.integration.ExtDataSourceBinder;
 
 public class CriteriaMappingRegistry {
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	private static final CriteriaMappingRegistry instance = new CriteriaMappingRegistry();
-
 	private final Set<MappingKey> registeredMappings = ConcurrentHashMap.newKeySet();
+
+	private final Map<String, MockMapping> mockMappingMap = new ConcurrentHashMap<>();
+	private volatile boolean isMockConfigLoaded = false;
 
 	private CriteriaMappingRegistry() {
 	}
@@ -313,4 +321,109 @@ public class CriteriaMappingRegistry {
 		}
 
 	}
+
+	// Mock mapping configuration information
+	public static class MockMapping {
+		private final String originalDataSourceName;
+		private final String originalTableName;
+		private final String paramOrDtoType;
+		private final String excelPath;
+		private final String sheetName;
+
+		public MockMapping(String originalDataSourceName, String originalTableName, String paramOrDtoType,
+				String excelPath,
+				String sheetName) {
+			this.originalDataSourceName = originalDataSourceName;
+			this.originalTableName = originalTableName;
+			this.paramOrDtoType = paramOrDtoType;
+			this.excelPath = excelPath;
+			this.sheetName = sheetName;
+		}
+
+		public String getOriginalDataSourceName() {
+			return originalDataSourceName;
+		}
+
+		public String getOriginalTableName() {
+			return originalTableName;
+		}
+
+		public String getParamOrDtoType() {
+			return paramOrDtoType;
+		}
+
+		public String getExcelPath() {
+			return excelPath;
+		}
+
+		public String getSheetName() {
+			return sheetName;
+		}
+
+		/**
+		 * Generate a consolidated table name to avoid conflicts within H2 (e.g., SALESDB_EMPLOYEE3)
+		 */
+		public String getH2TableName() {
+			return (originalDataSourceName + "_" + originalTableName).toUpperCase();
+		}
+	}
+
+	/**
+	 * Lazy-load criteria-mocks.json
+	 */
+	public void loadMockConfigIfNeeded() {
+		if (isMockConfigLoaded)
+			return;
+
+		synchronized (this) {
+			if (isMockConfigLoaded)
+				return;
+
+			File resourcesDir = Core.getConfiguration().getResourcesPath();
+			File mockFile = new File(resourcesDir + File.separator + "sql" + File.separator + "criteria-mocks.json");
+
+			if (mockFile.exists()) {
+				try {
+					String jsonContent = new String(Files.readAllBytes(mockFile.toPath()), "UTF-8");
+					JSONObject root = new JSONObject(jsonContent);
+					if (root.optBoolean("enabled", false)) {
+						JSONArray mocks = root.optJSONArray("mocks");
+						if (mocks != null) {
+							for (int i = 0; i < mocks.length(); i++) {
+								JSONObject mock = mocks.getJSONObject(i);
+								String dsName = mock.getString("dataSourceName");
+								String tableName = mock.getString("tableName");
+								String dtoType = mock.getString("paramOrDtoType");
+								String excelPath = mock.getString("excelPath");
+								String sheetName = mock.optString("sheetName", tableName);
+								String key = buildKey(dsName, tableName, dtoType);
+								mockMappingMap.put(key, new MockMapping(dsName, tableName, dtoType, excelPath, sheetName));
+							}
+						}
+					}
+					logger.info("Loaded criteria-mocks.json (" + mockMappingMap.size()
+							+ " entries of mocks) successfully.");
+				} catch (Exception e) {
+					logger.error("Failed to parse criteria-mocks.json", e);
+				}
+			} else {
+				logger.info("criteria-mocks.json not found in resources/sql/; skipping mock configuration loading.");
+			}
+			isMockConfigLoaded = true;
+		}
+	}
+
+	public MockMapping getMockMapping(String dataSourceName, String tableName, String dtoType) {
+		loadMockConfigIfNeeded();
+		if (mockMappingMap.isEmpty())
+			return null;
+
+		String key = buildKey(dataSourceName, tableName, dtoType);
+		return mockMappingMap.get(key);
+	}
+
+	private String buildKey(String dataSourceName, String tableName, String dtoType) {
+		return (dataSourceName + "." + tableName + "." + dtoType).trim().toLowerCase();
+	}
+
 }
