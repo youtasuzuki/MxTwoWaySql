@@ -117,6 +117,30 @@ $$MOCK_LOGGING$$
 -- If prefixed with `-- `, mocking is disabled; this requirement enforces an explicit declaration that the SQL is in a mocked state. Since mocked SQL causes errors in `TwoSqlTestResult_Overview`, it can be screened prior to committing code or releasing the application.
 -- To use this feature, the TwoWaySQLMocker module must be included in the application.
 ```
+- Mock `RetrieveByCriteria` to redirect operation on-memory h2db table with import data from Excel.  
+The Criteria mocking feature loads Excel data into an internal, in-memory H2 database and executes SQL operations against it; consequently, `WHERE` and `ORDER BY` operations are also mocked.  
+When using this function, Enable `resources/sql/criteria-mocks.json` and define your mock definitions.
+```
+{
+  "enabled": true,
+  "mocks": [
+    {
+      "dataSourceName": "YourAppsExtDataSourceName",
+      "tableName": "YourAppsTableName",
+      "paramOrDtoType": "ModuleName.EntityName",
+      "excelPath": "You_can_use_variable_$RESOURCES_or_$TWSMOCKER_or_$HOME_to_complement_the_path.",
+      "sheetName": "If_omitted_tableName_is_used."
+    },
+    {
+      "dataSourceName": "EXT_DB",
+      "tableName": "EMPLOYEE",
+      "paramOrDtoType": "MyFirstModule.ExtEmployee",
+      "excelPath": "$RESOURCES/sql/mockdata/employee_data.xlsx",
+      "sheetName": "EMPLOYEE"
+    }
+  ]
+}
+```
 # Additional Features
 ## Criteria
 - In version 2.10.0, we introduced a "Criteria" feature that allows access to an external database without the need to write SQL.
