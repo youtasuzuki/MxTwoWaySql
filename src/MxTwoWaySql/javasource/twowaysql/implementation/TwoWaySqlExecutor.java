@@ -975,10 +975,12 @@ public class TwoWaySqlExecutor {
 		}
 		HashMap<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.putAll(getNextParameters());
-		Map<String, ? extends IMendixObjectMember<?>> momMap = actionParameter.getMembers(context);
-		for (String key : momMap.keySet()) {
-			// MOCKなのでmxParam2DbfluteParam()でのタイムゾーン調整は省略
-			paramMap.put(key, momMap.get(key).getValue(context));
+		if (actionParameter != null) {
+			Map<String, ? extends IMendixObjectMember<?>> momMap = actionParameter.getMembers(context);
+			for (String key : momMap.keySet()) {
+				// MOCKなのでmxParam2DbfluteParam()でのタイムゾーン調整は省略
+				paramMap.put(key, momMap.get(key).getValue(context));
+			}
 		}
 		return paramMap;
 	}
