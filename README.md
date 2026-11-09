@@ -87,7 +87,8 @@ values
 /*END*/
 
 ```
-- Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql` to return data/count from Excel.
+- Mock `RetrieveByTwoWaySql`/`CountRowsByTwoWaySql`/`ExportExcelByTwoWaySql` to return data/count from Excel.  
+Mock `ExportCsvByTwoWaySql` to return data from Excel into CSV.
 ```
 $$MOCK_EXCEL$$ $RESOURCES/sql/mockdata/YourMockData.xlsx
 -- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
