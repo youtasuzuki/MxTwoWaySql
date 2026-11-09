@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
@@ -29,7 +30,7 @@ public class XssfExcelReader {
 	}
 
 	public boolean read() throws Exception {
-		try (OPCPackage pkg = OPCPackage.open(excelFile)) {
+		try (OPCPackage pkg = OPCPackage.open(excelFile, PackageAccess.READ)) {
 			ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(pkg, includePhoneticRuns);
 			XSSFReader reader = new XSSFReader(pkg);
 			StylesTable styles = reader.getStylesTable();
