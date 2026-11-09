@@ -45,6 +45,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 
+import system.proxies.FileDocument;
 import twowaysql.integration.ExtDataSourceBinder;
 import twowaysql.integration.ExtDataSourceWrapper;
 import twowaysql.proxies.constants.Constants;
@@ -506,44 +507,11 @@ public class TwoWaySqlExecutor {
 					// cut by youta-s 2022/11/09
 					DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(dateTimeFormat);
 
-					DecimalFormat df = new DecimalFormat("#.########");
-					// mod by sugita.h (2022/09/30) end
-
 					while (rset.next()) {
 						for (int colIdx = 1; colIdx <= colCount; colIdx++) {
 							Object value = rset.getObject(colIdx);
-							// mod by sugita.h (2022/09/30) start
-							if (value instanceof BigDecimal) {
-								values.add(df.format(((BigDecimal) value).stripTrailingZeros()));
-							} else if (value instanceof Timestamp) {
-								var date = (Date) value;
-								if ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0) {
-									// EXDS_WO_RSLT_TZ_ADJST指定無し → csv出力で指定されたのタイムゾーン時刻への調整あり
-									// selectByTwoWaySqlと違ってcsvに文字列で出力してしまうためこの先で利用者の地域のタイムゾーンに時刻を合わせるタイミングが無い。
-									// そのためここでcsv出力で指定のタイムゾーンに合わせる
-									// ※たかしこの実装がDateにキャストして処理してるので微妙にselectByTwoWaySqlと違ってて気持ち悪いけど放置 2025/06/12 youta-s
-
-									// 取得したjava.sql.Timestampで一旦UTCタイムゾーンのZonedDateTimeを生成して
-									// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
-									var atUTC = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-											.atZone(ZoneId.of("UTC"));
-									var dateForUser = atUTC.toInstant().atZone(userZone);
-									values.add(dateForUser.format(dateFormat));
-								} else {
-									// EXDS_WO_RSLT_TZ_ADJST指定ありなので時刻調整なし
-									// こちらのケースはDBにタイムゾーンありでストアされている(もしくはJDBC内で実行環境のタイムゾーンへの時刻調整が済んでいる)前提
-
-									// 取得したjava.sql.Timestampで一旦実行環境のタイムゾーンのZonedDateTimeを生成して
-									// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
-									var atSystemZone = date.toInstant().atZone(ZoneId.systemDefault());
-									var dateForUser = atSystemZone.toInstant().atZone(userZone);
-									values.add(dateForUser.format(dateFormat));									
-								}
-							}
-							// mod by sugita.h (2022/09/30) end
-							else {
-								values.add(value);
-							}
+							Object convertedValue = convertToExportValue(value, dsoptions, dateFormat, userZone);
+							values.add(convertedValue);
 						}
 						csvPrinter.printRecord(values);
 						values.clear();
@@ -566,6 +534,95 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
+	public int exportExcelByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter,
+			FileDocument excelFileDocument, String sheetName, String dateTimeFormat, ZoneId userZone) throws Exception {
+		int recordCount = 0;
+		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
+		if (extDataSourceName == null) {
+			recordCount = Core.dataStorage().executeWithConnection(context, connection -> {
+				int count = exportExcelByTwoWaySql(connection, context, twoWaySqlFileName, parameter, excelFileDocument, sheetName, dateTimeFormat, userZone);
+				return count;
+			});
+		} else {
+			ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
+			if (ds == null) {
+				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
+			}
+			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			try (Connection con = ds.getConnection(context)) {
+				recordCount = exportExcelByTwoWaySql(con, context, twoWaySqlFileName, parameter, excelFileDocument, sheetName, dateTimeFormat, userZone);
+			} catch (SQLException e) {
+				throw new MendixRuntimeException(e);
+			}
+		}
+		return recordCount;
+	}
+
+	public int exportExcelByTwoWaySql(Connection connection, IContext context, String twoWaySqlFileName,
+			IMendixObject parameter, FileDocument excelFileDocument, String sheetName, String dateTimeFormat, ZoneId userZone) throws RuntimeException {
+		long count = 0;
+		try {
+			setupTwoWaySql(context, twoWaySqlFileName, parameter);
+			DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(dateTimeFormat);
+
+			try (PreparedStatement stmt = connection.prepareStatement(this.preparedSql)) {
+				setBindVariables(stmt);
+				setupSlowQueryDetection();
+				try (ResultSet rset = stmt.executeQuery()) {
+					reportSlowQuery();
+					count = ExcelExporter.exportToExcel(excelFileDocument, rset, sheetName, dsoptions, dateFormat, userZone);
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("exportExcelByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + count);
+			}
+		} catch (Exception e) {
+			if (preparedSql != null) {
+				logger.error("exportExcelByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
+						+ toStringBindVariables() + "\nResultCount=" + count);
+			}
+			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
+			throw new MendixRuntimeException(e);
+		}
+		return (int)count;
+	}
+
+	public static DecimalFormat decFmt = new DecimalFormat("#.########");
+	public static Object convertToExportValue(Object value, Long dsoptions, DateTimeFormatter dateFormat, ZoneId userZone) {
+		if (value instanceof BigDecimal) {
+			return decFmt.format(((BigDecimal) value).stripTrailingZeros());
+		} else if (value instanceof Boolean) {
+			return ((Boolean) value).booleanValue() ? "TRUE" : "FALSE";
+		} else if (value instanceof Timestamp) {
+			var date = (Date) value;
+			if ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0) {
+				// EXDS_WO_RSLT_TZ_ADJST指定無し → csv出力で指定されたのタイムゾーン時刻への調整あり
+				// selectByTwoWaySqlと違ってcsvに文字列で出力してしまうためこの先で利用者の地域のタイムゾーンに時刻を合わせるタイミングが無い。
+				// そのためここでcsv出力で指定のタイムゾーンに合わせる
+				// ※たかしこの実装がDateにキャストして処理してるので微妙にselectByTwoWaySqlと違ってて気持ち悪いけど放置 2025/06/12 youta-s
+
+				// 取得したjava.sql.Timestampで一旦UTCタイムゾーンのZonedDateTimeを生成して
+				// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
+				var atUTC = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+						.atZone(ZoneId.of("UTC"));
+				var dateForUser = atUTC.toInstant().atZone(userZone);
+				return dateForUser.format(dateFormat);
+			} else {
+				// EXDS_WO_RSLT_TZ_ADJST指定ありなので時刻調整なし
+				// こちらのケースはDBにタイムゾーンありでストアされている(もしくはJDBC内で実行環境のタイムゾーンへの時刻調整が済んでいる)前提
+
+				// 取得したjava.sql.Timestampで一旦実行環境のタイムゾーンのZonedDateTimeを生成して
+				// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
+				var atSystemZone = date.toInstant().atZone(ZoneId.systemDefault());
+				var dateForUser = atSystemZone.toInstant().atZone(userZone);
+				return dateForUser.format(dateFormat);									
+			}
+		} else {
+			return value;
+		}
+	}
+	
 	private void setupTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter)
 			throws Exception {
 //		BoundDateDisplayStyle boundDateDisplayStyle = createBoundDateDisplayStyle(TimeZone.getDefault());
@@ -917,6 +974,8 @@ public class TwoWaySqlExecutor {
 		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, String resultEntityType) throws Exception;
 		public java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
 		public java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
+		public java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
+		public java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
 	}
 
 	private static TwoWaySqlMocker twoWaySqlMocker = null;
@@ -958,6 +1017,28 @@ public class TwoWaySqlExecutor {
 		java.lang.Long count = null;
 		try {
 			count = twoWaySqlMocker.mockUpdateByTwoWaySql(context, mockDirective, paramMap);
+		} finally {
+			resetParameters();
+		}
+		return count;
+	}
+
+	public static java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, FileDocument csvFileDocument) throws Exception {
+		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
+		java.lang.Long count = null;
+		try {
+			count = twoWaySqlMocker.mockExportCsvByTwoWaySql(context, mockDirective, paramMap, csvFileDocument);
+		} finally {
+			resetParameters();
+		}
+		return count;
+	}
+
+	public static java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, FileDocument excelFileDocument) throws Exception {
+		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
+		java.lang.Long count = null;
+		try {
+			count = twoWaySqlMocker.mockExportExcelByTwoWaySql(context, mockDirective, paramMap, excelFileDocument);
 		} finally {
 			resetParameters();
 		}

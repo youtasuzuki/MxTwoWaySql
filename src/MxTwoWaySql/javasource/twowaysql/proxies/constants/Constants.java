@@ -16,7 +16,7 @@ public final class Constants
 	// These are the constants for the TwoWaySQL module
 
 	/**
-	* A constant representing the date format for the ExportCsvByTwoWaySql action. It is used when no date format is specified during the execution of ExportCsvByTwoWaySql.
+	* A constant representing the date format for the ExportCsvByTwoWaySql and ExportExcelByTwoWaySql action. It is used when no date format is specified during the execution of ExportCsvByTwoWaySql and ExportExcelByTwoWaySql.
 	*/
 	public static java.lang.String getDateTimeFormat()
 	{

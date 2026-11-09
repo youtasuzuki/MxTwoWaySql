@@ -134,6 +134,7 @@ public class UserActionsRegistrar
     registrator.registerUserAction(twowaysql.actions.DeletePeByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.EndTranOnExternalDataSource.class);
     registrator.registerUserAction(twowaysql.actions.ExportCsvByTwoWaySql.class);
+    registrator.registerUserAction(twowaysql.actions.ExportExcelByTwoWaySql.class);
     registrator.registerUserAction(twowaysql.actions.GetJoinee.class);
     registrator.registerUserAction(twowaysql.actions.GetNext.class);
     registrator.registerUserAction(twowaysql.actions.GetNextByInLineCursor.class);

@@ -153,21 +153,40 @@ public final class Microflows
 			)
 			.execute(context);
 	}
-	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExportCsvByTwoWaySqlTest_2Builder(
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExportCsvByTwoWaySqlTest_InlineSQLBuilder(
 		myfirstmodule.proxies.EmployeePmb _employeePmb
 	)
 	{
-		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExportCsvByTwoWaySqlTest_2");
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExportCsvByTwoWaySqlTest_InlineSQL");
 		builder = builder.withParam("EmployeePmb", _employeePmb);
 		return builder;
 	}
 
-	public static void aCT_ExportCsvByTwoWaySqlTest_2(
+	public static void aCT_ExportCsvByTwoWaySqlTest_InlineSQL(
 		IContext context,
 		myfirstmodule.proxies.EmployeePmb _employeePmb
 	)
 	{
-		aCT_ExportCsvByTwoWaySqlTest_2Builder(
+		aCT_ExportCsvByTwoWaySqlTest_InlineSQLBuilder(
+				_employeePmb
+			)
+			.execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExportExcelByTwoWaySqlTestBuilder(
+		myfirstmodule.proxies.EmployeePmb _employeePmb
+	)
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExportExcelByTwoWaySqlTest");
+		builder = builder.withParam("EmployeePmb", _employeePmb);
+		return builder;
+	}
+
+	public static void aCT_ExportExcelByTwoWaySqlTest(
+		IContext context,
+		myfirstmodule.proxies.EmployeePmb _employeePmb
+	)
+	{
+		aCT_ExportExcelByTwoWaySqlTestBuilder(
 				_employeePmb
 			)
 			.execute(context);
@@ -181,6 +200,16 @@ public final class Microflows
 	public static void aCT_ExtDsExportCsvTest(IContext context)
 	{
 		aCT_ExtDsExportCsvTestBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExtDsExportExcelTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExtDsExportExcelTest");
+		return builder;
+	}
+
+	public static void aCT_ExtDsExportExcelTest(IContext context)
+	{
+		aCT_ExtDsExportExcelTestBuilder().execute(context);
 	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExtDsInsertSelectTestBuilder()
 	{

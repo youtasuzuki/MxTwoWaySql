@@ -21,12 +21,13 @@ import java.util.TimeZone;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
+import com.mendix.systemwideinterfaces.core.UserAction;
 import twowaysql.implementation.CSVFormatUtil;
 import twowaysql.implementation.TwoWaySqlExecutor;
 import twowaysql.proxies.constants.Constants;
-import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
  * Execute TwoWaySQL and output directly from the JDBC ResultSet to a CSV file.
@@ -78,10 +79,19 @@ public class ExportCsvByTwoWaySql extends UserAction<java.lang.Long>
 	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
+		String mockDirective = TwoWaySqlExecutor.getMockDirective(TwoWaySqlFileName);
+		if (mockDirective != null) {
+			// MOCK interruption: retrieve by 2WaySQL is mocked, so return the mock result 
+			TwoWaySqlExecutor.addParameter("TwoWaySqlFileName", TwoWaySqlFileName);
+			TwoWaySqlExecutor.addParameter("CsvFormat", CsvFormat);
+			TwoWaySqlExecutor.addParameter("CharacterSet", CharacterSet);
+			java.lang.Long count = TwoWaySqlExecutor.mockExportCsvByTwoWaySql(getContext(), mockDirective, Parameter, CsvFileDocument);
+			logger.warn("ExportCsvByTwoWaySql '" + TwoWaySqlFileName + "' is mocked by directive: " + mockDirective + ", returning " + count + " records.\n");
+			return count;
+		}
+
 		long recordCount = 0;
-
 		final CSVFormat cmnCsvFormat = CSVFormatUtil.setupCSVFormat(CsvFormat);
-
 		File tmpFile = File.createTempFile("export-", ".csv");
 		try {
 			try (final Writer writer = new BufferedWriter(new OutputStreamWriter(//
@@ -99,7 +109,7 @@ public class ExportCsvByTwoWaySql extends UserAction<java.lang.Long>
 				// mod start by youta 2022/11/09
 				String zoneId = this.CsvFormat == null? null: CsvFormat.getZoneId();
 				if (zoneId == null) {
-					TimeZone timeZone = getContext().getSession().getTimeZone();
+					TimeZone timeZone = (getContext().getSession() != null)? getContext().getSession().getTimeZone(): null;
 					if (timeZone != null) {
 						zoneId = timeZone.toZoneId().getId();
 					} else {
@@ -139,5 +149,6 @@ public class ExportCsvByTwoWaySql extends UserAction<java.lang.Long>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	// END EXTRA CODE
 }

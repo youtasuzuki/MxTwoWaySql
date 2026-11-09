@@ -1,3 +1,4 @@
+-- $$MOCK_EXCEL$$ $TWSMOCKER\sample\test1.xlsx
 -- #MyFirstModule.Employee#
 -- @SaferOQLDevApp@ 
 select

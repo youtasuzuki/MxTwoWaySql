@@ -75,6 +75,9 @@ public class FileDocument implements com.mendix.systemwideinterfaces.core.IEntit
 		if (mendixObject.isInstanceOf("MyFirstModule.EmployeeCsv")) {
 			return myfirstmodule.proxies.EmployeeCsv.initialize(context, mendixObject);
 		}
+		if (mendixObject.isInstanceOf("MyFirstModule.EmployeeExcel")) {
+			return myfirstmodule.proxies.EmployeeExcel.initialize(context, mendixObject);
+		}
 		if (mendixObject.isInstanceOf("NanoProfiler.FileForDownload")) {
 			return nanoprofiler.proxies.FileForDownload.initialize(context, mendixObject);
 		}

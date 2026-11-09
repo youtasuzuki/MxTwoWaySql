@@ -45,7 +45,7 @@ public class ReadExcelFromFile extends UserAction<java.util.List<IMendixObject>>
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		List<IMendixObject> resultList = ExcelReader.readExcelFromFile(getContext(), ExcelFilePath, RecordEntityType, SheetName, TimeZoneId);
+		List<IMendixObject> resultList = ExcelReader.readExcelFromFileToEntityList(getContext(), ExcelFilePath, RecordEntityType, SheetName, TimeZoneId);
 		return resultList;
 		// END USER CODE
 	}
