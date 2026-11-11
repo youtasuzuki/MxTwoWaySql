@@ -133,8 +133,9 @@ public final class ExcelExporter {
 				while (hasNext && rowNum < MAX_ROWS_PER_SHEET) {
 					rowNum++;
 					for (int c = 0; c < cols; c++) {
-						Object value = rs.getObject(c + 1);
-						Object exportValue = TwoWaySqlExecutor.convertToExportValue(value, dsoptions, dateFormat, userZone);
+						//Object value = rs.getObject(c + 1);
+						Object value = TwoWaySqlExecutor.readColumnValue(rs, c + 1, md);
+						Object exportValue = TwoWaySqlExecutor.convertToExportValue(value, dateFormat, userZone);
 						values[c] = exportValue == null ? null : exportValue.toString();
 					}
 					writeRow(w, rowNum, values, colRefs);

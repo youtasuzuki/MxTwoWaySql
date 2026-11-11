@@ -9,10 +9,12 @@
 
 package twowaysql.actions;
 
+import com.mendix.core.Core;
+import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
+import com.mendix.systemwideinterfaces.core.UserAction;
 import com.zaxxer.hikari.HikariDataSource;
 import twowaysql.integration.ExtDataSourceBinder;
-import com.mendix.systemwideinterfaces.core.UserAction;
 
 /**
  * If you are using an external database, please call this Action from `AfterStartUp` to register the data source.
@@ -26,6 +28,7 @@ public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 	private final java.lang.String User;
 	private final java.lang.String Password;
 	private final java.lang.Long Options;
+	private final java.lang.String ZoneId;
 
 	public RegisterExternalDataSource(
 		IContext context,
@@ -34,7 +37,8 @@ public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 		java.lang.String _url,
 		java.lang.String _user,
 		java.lang.String _password,
-		java.lang.Long _options
+		java.lang.Long _options,
+		java.lang.String _zoneId
 	)
 	{
 		super(context);
@@ -44,6 +48,7 @@ public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 		this.User = _user;
 		this.Password = _password;
 		this.Options = _options;
+		this.ZoneId = _zoneId;
 	}
 
 	@java.lang.Override
@@ -54,6 +59,12 @@ public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 		if (this.Options != null) {
 			ExtDataSourceBinder.putExtDataSourceOptions(ExternalDataSourceName,  this.Options == null? 0 : this.Options);
 		}
+		if (this.ZoneId != null) {
+			ExtDataSourceBinder.putExtDataSourceZoneId(ExternalDataSourceName,  java.time.ZoneId.of(this.ZoneId));
+		} else {
+			ExtDataSourceBinder.putExtDataSourceZoneId(ExternalDataSourceName,  java.time.ZoneId.systemDefault());
+		}
+		logger.info("External DataSource '" + ExternalDataSourceName + "' is registered. DriverClassName: " + DriverClassName + ", Url: " + Url + ", Options: " + Options + ", ZoneId: " + ExtDataSourceBinder.getExtDataSourceZoneId(ExternalDataSourceName));
 		return null;
 		// END USER CODE
 	}
@@ -69,6 +80,7 @@ public class RegisterExternalDataSource extends UserAction<java.lang.Void>
 	}
 
 	// BEGIN EXTRA CODE
+	public static final ILogNode logger = Core.getLogger("TwoWaySql");
 	private HikariDataSource createHikariDataSource() throws Exception {
 		//Class.forName("org.postgresql.Driver");
 		final HikariDataSource dataSource = new HikariDataSource();

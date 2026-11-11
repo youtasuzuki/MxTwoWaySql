@@ -14,7 +14,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +48,7 @@ import com.mendix.systemwideinterfaces.core.IMendixIdentifier;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 import system.proxies.FileDocument;
 import twowaysql.integration.ExtDataSourceBinder;
@@ -56,6 +61,7 @@ public class TwoWaySqlExecutor {
 	private String preparedSql;
 	private Object[] bindVariables = new Object[0];
 	private Long dsoptions = 0L;
+	private ZoneId dsZoneId = java.time.ZoneId.of("UTC");	// UTCは内部DB用のデフォルト値
 	private Map<String, String> resultEntityMemberNames = new HashMap<String, String>();
 	private static Map<String, String> sqlMap = new ConcurrentHashMap<String, String>();
 	public static final String MOCK_DIRECTIVE = "$$MOCK_";
@@ -88,7 +94,8 @@ public class TwoWaySqlExecutor {
 
 	public int selectByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter,
 			String resultEntityType, //
-			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows) throws Exception {
+			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows)
+			throws Exception {
 		int recordCount;
 		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
 		if (extDataSourceName == null) {
@@ -103,6 +110,7 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
 				recordCount = selectByTwoWaySql(con, context, twoWaySqlFileName, parameter, resultEntityType,
 						resultList, callBackMicroflow, batchCommitSize, countRows);
@@ -115,7 +123,8 @@ public class TwoWaySqlExecutor {
 
 	public int selectByTwoWaySql(Connection connection, IContext context, String twoWaySqlFileName,
 			IMendixObject parameter, String resultEntityType, //
-			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows) throws RuntimeException {
+			java.util.List<IMendixObject> resultList, String callBackMicroflow, int batchCommitSize, boolean countRows)
+			throws RuntimeException {
 		int count = 0;
 		try {
 			if (!countRows) {
@@ -132,7 +141,7 @@ public class TwoWaySqlExecutor {
 					reportSlowQuery();
 					ResultSetMetaData rmd = rset.getMetaData();
 					int colCount = rmd.getColumnCount();
-					while ( rset.next()) {
+					while (rset.next()) {
 						if (countRows) {
 							count = rset.getInt(1);
 							break;
@@ -144,8 +153,8 @@ public class TwoWaySqlExecutor {
 								// InsertSelectPeByTwoWaySqlの場合なので必要ならコールバックしてコミット
 								if (callBackMicroflow != null) {
 									Core.microflowCall(callBackMicroflow).inTransaction(true). //
-										withParam("InsertEntityList", resultList). //
-										execute(context);
+											withParam("InsertEntityList", resultList). //
+											execute(context);
 								}
 								Core.commit(context, resultList);
 								resultList.clear();
@@ -164,8 +173,8 @@ public class TwoWaySqlExecutor {
 						// InsertSelectPeByTwoWaySqlの場合なので必要ならコールバックしてコミット
 						if (callBackMicroflow != null) {
 							Core.microflowCall(callBackMicroflow).inTransaction(true). //
-								withParam("InsertEntityList", resultList). //
-								execute(context);
+									withParam("InsertEntityList", resultList). //
+									execute(context);
 						}
 						Core.commit(context, resultList);
 						resultList.clear();
@@ -189,14 +198,16 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
-	public java.util.List<IMendixObject> selectExtDbByStandardSql(IContext context, String extDataSourceName, String sql, List<Object> parameters,
-			String resultEntityType	 ) throws Exception {
+	public java.util.List<IMendixObject> selectExtDbByStandardSql(IContext context, String extDataSourceName,
+			String sql, List<Object> parameters,
+			String resultEntityType) throws Exception {
 		java.util.List<IMendixObject> resultList = new ArrayList<IMendixObject>();
 		ExtDataSourceWrapper ds = ExtDataSourceBinder.getExtDataSource(extDataSourceName);
 		if (ds == null) {
 			throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 		}
 		dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+		dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 		try (Connection con = ds.getConnection(context)) {
 			setupResultEntityMemberNames(context, resultEntityType);
 			try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -221,49 +232,91 @@ public class TwoWaySqlExecutor {
 						+ parameters + "\nResultCount=" + resultList.size());
 			}
 		} catch (SQLException e) {
-			throw new MendixRuntimeException("selectExtDbByStandardSql: Sql=\n" + sql + "\nparameters=" + parameters, e);
+			throw new MendixRuntimeException("selectExtDbByStandardSql: Sql=\n" + sql + "\nparameters=" + parameters,
+					e);
 		}
 		return resultList;
 	}
 
-	public IMendixObject readToMendixObject(IContext context,String resultEntityType, ResultSet rset, int colCount, ResultSetMetaData rmd) throws SQLException {
+	public IMendixObject readToMendixObject(IContext context, String resultEntityType, ResultSet rset, int colCount,
+			ResultSetMetaData rmd) throws SQLException {
 		IMendixObject obj = null;
 		if (FakeMendixObject.class.getName().equals(resultEntityType)) {
 			obj = new FakeMendixObject();
 		} else {
 			obj = Core.instantiate(context, resultEntityType);
 		}
+		// EXDS_WO_RSLT_TZ_ADJST指定なし → UTCとして解釈（内部DBもこの扱い）
+		// EXDS_WO_RSLT_TZ_ADJST指定あり → 外部DBのタイムゾーンで解釈
+		ZoneId effectiveZone = ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0)
+		        ? ZoneOffset.UTC : dsZoneId;
 		for (int colIdx = 1; colIdx <= colCount; colIdx++) {
 			String colName = rmd.getColumnLabel(colIdx);
 			String entityMemberName = resultEntityMemberNames.get(colName.toLowerCase());
 			if (entityMemberName != null) {
-				var memberValue = rset.getObject(colIdx);
-				if (memberValue instanceof java.sql.Timestamp) {
-					if ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0L) {
-						// EXDS_WO_RSLT_TZ_ADJST指定無し → 実行環境のタイムゾーン時刻への調整あり
-						// このケースはDBにタイムゾーン無しのUTC時刻でストアされていてJDBCが何の調整もしていない前提(Mendixでは標準)
-						// そのため取得したjava.sql.Timestampで一旦UTCタイムゾーンのZonedDateTimeを生成して
-						// そのZonedDateTimeからava.util.Dateを生成する事で実行環境のタイムゾーンに時刻を調整する
-						
-						var timeStamp = (java.sql.Timestamp) memberValue; // DBの値のままで取れる(UTC)
-						// Timestamp型をそのままEntityにセットすると実行環境のタイムゾーン分ずれる
-						// timeStampをそのままInstantにしても実行環境のタイムゾーン分ずれるのでLocalDateTimeを経由してからDateにする
-						var ldt = timeStamp.toLocalDateTime();
-						var zdt = ldt.atZone(ZoneOffset.UTC); // Dateに変換するためZonedDateTimeにする。DB上はUTCなのでUTC指定
-						var date = java.util.Date.from(zdt.toInstant()); // MendixのためにDateに戻す. ここで実行環境のタイムゾーンのDateになるが問題ない
-						obj.setValue(context, entityMemberName, date);
-					} else {
-						// EXDS_WO_RSLT_TZ_ADJST指定ありなので時刻調整なし
-						// こちらのケースはDBにタイムゾーンありでストアされている(もしくはJDBC内で実行環境のタイムゾーンへの時刻調整が済んでいる)前提
-						// java.sql.TimestampのままsetValue()することで時刻調整無しで実行環境のタイムゾーンだ付与される
-						obj.setValue(context, entityMemberName, memberValue);
-					}
-				} else {
-					obj.setValue(context, entityMemberName, memberValue);
-				}
+				var memberValue = readColumnValue(rset, colIdx, rmd);
+				obj.setValue(context, entityMemberName, 
+						toMendixValue(memberValue, isLocalized(resultEntityType, entityMemberName), effectiveZone));
 			}
 		}
-		return obj;		
+		return obj;
+	}
+
+	static Object readColumnValue(ResultSet rset, int i, ResultSetMetaData rmd) throws SQLException {
+		int type = rmd.getColumnType(i);
+		String typeName = rmd.getColumnTypeName(i);
+
+		// タイムゾーン付き: Oracle TIMESTAMP WITH TIME ZONE / Postgres timestamptz など
+		if (type == -101 /* OracleTypes.TIMESTAMPTZ */
+				|| type == Types.TIMESTAMP_WITH_TIMEZONE
+				|| "timestamptz".equalsIgnoreCase(typeName)) {
+			return  rset.getObject(i, OffsetDateTime.class);
+		}
+
+		// Oracle TIMESTAMP WITH LOCAL TIME ZONE: ドライバーがセッションTZから瞬間に変換
+		if (type == -102 /* OracleTypes.TIMESTAMPLTZ */) {
+			Timestamp ts = rset.getTimestamp(i);
+	        return ts == null ? null : ts.toInstant().atOffset(ZoneOffset.UTC);  // 瞬間
+		}
+
+		// Oracle DATE / TIMESTAMP, Postgres timestamp（Mendix内部DB含む）
+		if (type == Types.TIMESTAMP) {
+			return rset.getObject(i, LocalDateTime.class);
+		}
+		
+		// Postgres date など暦日（タイムゾーンなし）
+		// ※Oracle DATEは mapDateToTimestamp=true（デフォルト）なら TIMESTAMP 側に来る
+		if (type == Types.DATE) {
+			return rset.getObject(i, LocalDate.class);
+		}
+		
+		return rset.getObject(i);
+	}
+
+	// エンティティ用: java.time → Date
+	static Object toMendixValue(Object value, boolean localized, ZoneId dbZone) {
+		if (value instanceof OffsetDateTime) {
+			return Date.from(((OffsetDateTime) value).toInstant());
+		} else if (value instanceof LocalDateTime) {
+			ZoneId zone = localized ? dbZone : ZoneOffset.UTC;
+			return Date.from(((LocalDateTime) value).atZone(zone).toInstant());
+		} else if (value instanceof LocalDate) {
+			return Date.from(((LocalDate) value).atStartOfDay(ZoneOffset.UTC).toInstant());
+		}
+		return value;
+	}
+
+	private static final Map<String, Boolean> localizeCache = new ConcurrentHashMap<>();
+
+	private static boolean isLocalized(String entityType, String memberName) {
+		if (entityType == null || memberName == null) return false;
+	    // メタ情報のないFakeMendixObjectは従来通りdbZoneで解釈
+	    if (FakeMendixObject.class.getName().equals(entityType)) return true;
+	    return localizeCache.computeIfAbsent(entityType + "." + memberName, k -> {
+	        IMetaPrimitive p = Core.getMetaObject(entityType).getMetaPrimitive(memberName);
+	        if (p == null || p.getType() != IMetaPrimitive.PrimitiveType.DateTime) return true;
+	        return p.shouldLocalizeDate();
+	    });
 	}
 	
 	public int updateByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter)
@@ -281,6 +334,7 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
 				updateCount = updateByTwoWaySql(con, context, twoWaySqlFileName, parameter);
 			} catch (SQLException e) {
@@ -310,7 +364,7 @@ public class TwoWaySqlExecutor {
 		} catch (Exception e) {
 			if (preparedSql != null) {
 				logger.error("updateByTwoWaySql: PreparedSql=\n" + preparedSql + "\nBindVariables="
-					+ toStringBindVariables() + "\nResultCount=" + count);
+						+ toStringBindVariables() + "\nResultCount=" + count);
 			}
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
@@ -318,14 +372,16 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
-	public int callByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter, String resultEntityType, //
+	public int callByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter,
+			String resultEntityType, //
 			java.util.List<IMendixObject> resultList)
 			throws Exception {
 		int resultCount;
 		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
 		if (extDataSourceName == null) {
 			resultCount = Core.dataStorage().executeWithConnection(context, connection -> {
-				int count = callByTwoWaySql(connection, context, twoWaySqlFileName, parameter, resultEntityType, resultList);
+				int count = callByTwoWaySql(connection, context, twoWaySqlFileName, parameter, resultEntityType,
+						resultList);
 				return count;
 			});
 		} else {
@@ -334,6 +390,7 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
 				resultCount = callByTwoWaySql(con, context, twoWaySqlFileName, parameter, resultEntityType, resultList);
 			} catch (SQLException e) {
@@ -390,8 +447,8 @@ public class TwoWaySqlExecutor {
 		return resultCount;
 	}
 
-		
-	public int deleteByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter, int batchDeleteSize)
+	public int deleteByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter,
+			int batchDeleteSize)
 			throws Exception {
 		int updateCount = Core.dataStorage().executeWithConnection(context, connection -> {
 			int count = deleteByTwoWaySql(connection, context, twoWaySqlFileName, parameter, batchDeleteSize);
@@ -462,6 +519,7 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
 				recordCount = exportCsvByTwoWaySql(con, context, twoWaySqlFileName, parameter, csvPrinter,
 						dateTimeFormat, userZone);
@@ -493,24 +551,13 @@ public class TwoWaySqlExecutor {
 					}
 					csvPrinter.printRecord(headerNames);
 					final List<Object> values = new ArrayList<Object>();
-
-					// mod by sugita.h (2022/09/30) start
-					// cut by youta-s 2022/11/09
-					//					    ZoneId userZone;
-					//						if(context.getSession().getTimeZone() != null) {
-					//							userZone = context.getSession().getTimeZone().toZoneId();
-					//						} else {
-					//							IMendixObject __timeZone = Core.microflowCall("Common.SUB_GetTimezoneByPlantCodeConstant").inTransaction(true).execute(context);
-					//							system.proxies.TimeZone timeZone = __timeZone == null ? null : system.proxies.TimeZone.initialize(context, __timeZone);
-					//							userZone = TimeZone.getTimeZone(timeZone.getCode()).toZoneId();
-					//						}
-					// cut by youta-s 2022/11/09
 					DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(dateTimeFormat);
 
 					while (rset.next()) {
 						for (int colIdx = 1; colIdx <= colCount; colIdx++) {
-							Object value = rset.getObject(colIdx);
-							Object convertedValue = convertToExportValue(value, dsoptions, dateFormat, userZone);
+							//Object value = rset.getObject(colIdx);
+							var value = readColumnValue(rset, colIdx, rmd);
+							Object convertedValue = convertToExportValue(value, dateFormat, userZone);
 							values.add(convertedValue);
 						}
 						csvPrinter.printRecord(values);
@@ -540,7 +587,8 @@ public class TwoWaySqlExecutor {
 		String extDataSourceName = getExtDataSourceNameFromFileName(twoWaySqlFileName);
 		if (extDataSourceName == null) {
 			recordCount = Core.dataStorage().executeWithConnection(context, connection -> {
-				int count = exportExcelByTwoWaySql(connection, context, twoWaySqlFileName, parameter, excelFileDocument, sheetName, dateTimeFormat, userZone);
+				int count = exportExcelByTwoWaySql(connection, context, twoWaySqlFileName, parameter, excelFileDocument,
+						sheetName, dateTimeFormat, userZone);
 				return count;
 			});
 		} else {
@@ -549,8 +597,10 @@ public class TwoWaySqlExecutor {
 				throw new MendixRuntimeException("ExtDataSource " + extDataSourceName + "is not found.");
 			}
 			dsoptions = ExtDataSourceBinder.getExtDataSourceOptions(extDataSourceName);
+			dsZoneId = ExtDataSourceBinder.getExtDataSourceZoneId(extDataSourceName);
 			try (Connection con = ds.getConnection(context)) {
-				recordCount = exportExcelByTwoWaySql(con, context, twoWaySqlFileName, parameter, excelFileDocument, sheetName, dateTimeFormat, userZone);
+				recordCount = exportExcelByTwoWaySql(con, context, twoWaySqlFileName, parameter, excelFileDocument,
+						sheetName, dateTimeFormat, userZone);
 			} catch (SQLException e) {
 				throw new MendixRuntimeException(e);
 			}
@@ -559,7 +609,8 @@ public class TwoWaySqlExecutor {
 	}
 
 	public int exportExcelByTwoWaySql(Connection connection, IContext context, String twoWaySqlFileName,
-			IMendixObject parameter, FileDocument excelFileDocument, String sheetName, String dateTimeFormat, ZoneId userZone) throws RuntimeException {
+			IMendixObject parameter, FileDocument excelFileDocument, String sheetName, String dateTimeFormat,
+			ZoneId userZone) throws RuntimeException {
 		long count = 0;
 		try {
 			setupTwoWaySql(context, twoWaySqlFileName, parameter);
@@ -585,47 +636,37 @@ public class TwoWaySqlExecutor {
 			logger.error("Failed to execute sql statement: " + e.getMessage(), e);
 			throw new MendixRuntimeException(e);
 		}
-		return (int)count;
+		return (int) count;
 	}
 
 	public static DecimalFormat decFmt = new DecimalFormat("#.########");
-	public static Object convertToExportValue(Object value, Long dsoptions, DateTimeFormatter dateFormat, ZoneId userZone) {
+
+	public static Object convertToExportValue(Object value, DateTimeFormatter dateFormat,
+			ZoneId userZone) {
 		if (value instanceof BigDecimal) {
 			return decFmt.format(((BigDecimal) value).stripTrailingZeros());
 		} else if (value instanceof Boolean) {
 			return ((Boolean) value).booleanValue() ? "TRUE" : "FALSE";
-		} else if (value instanceof Timestamp) {
-			var date = (Date) value;
-			if ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0) {
-				// EXDS_WO_RSLT_TZ_ADJST指定無し → csv出力で指定されたのタイムゾーン時刻への調整あり
-				// selectByTwoWaySqlと違ってcsvに文字列で出力してしまうためこの先で利用者の地域のタイムゾーンに時刻を合わせるタイミングが無い。
-				// そのためここでcsv出力で指定のタイムゾーンに合わせる
-				// ※たかしこの実装がDateにキャストして処理してるので微妙にselectByTwoWaySqlと違ってて気持ち悪いけど放置 2025/06/12 youta-s
-
-				// 取得したjava.sql.Timestampで一旦UTCタイムゾーンのZonedDateTimeを生成して
-				// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
-				var atUTC = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-						.atZone(ZoneId.of("UTC"));
-				var dateForUser = atUTC.toInstant().atZone(userZone);
-				return dateForUser.format(dateFormat);
-			} else {
-				// EXDS_WO_RSLT_TZ_ADJST指定ありなので時刻調整なし
-				// こちらのケースはDBにタイムゾーンありでストアされている(もしくはJDBC内で実行環境のタイムゾーンへの時刻調整が済んでいる)前提
-
-				// 取得したjava.sql.Timestampで一旦実行環境のタイムゾーンのZonedDateTimeを生成して
-				// そのZonedDateTimeからcsv出力で指定されたタイムゾーンに時刻を調整する
-				var atSystemZone = date.toInstant().atZone(ZoneId.systemDefault());
-				var dateForUser = atSystemZone.toInstant().atZone(userZone);
-				return dateForUser.format(dateFormat);									
-			}
+		} else if (value instanceof OffsetDateTime) {
+			// 瞬間 → ユーザーのタイムゾーンで表示
+			return ((OffsetDateTime) value).atZoneSameInstant(userZone).format(dateFormat);
+		} else if (value instanceof LocalDateTime) {
+			// タイムゾーンなし → DBの値そのまま
+			return ((LocalDateTime) value).format(dateFormat);
+		} else if (value instanceof LocalDate) {
+			// 暦日 → 0時として表示（時刻を含むフォーマットでも落ちないように）
+			return ((LocalDate) value).atStartOfDay().format(dateFormat);
+		} else if (value instanceof Date) {
+			// 従来互換: 瞬間としてユーザーのタイムゾーンで表示
+			return ((Date) value).toInstant().atZone(userZone).format(dateFormat);
 		} else {
 			return value;
 		}
 	}
-	
+
 	private void setupTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter)
 			throws Exception {
-//		BoundDateDisplayStyle boundDateDisplayStyle = createBoundDateDisplayStyle(TimeZone.getDefault());
+		//		BoundDateDisplayStyle boundDateDisplayStyle = createBoundDateDisplayStyle(TimeZone.getDefault());
 		SimpleMapPmb<Object> pmb = convertIMendixObject2SimpleMapPmb(parameter, context);
 		String twoWaySQL;
 		if (twoWaySqlFileName.startsWith("--")) {
@@ -656,7 +697,8 @@ public class TwoWaySqlExecutor {
 		return bindValStr.toString();
 	}
 
-	private SimpleMapPmb<Object> convertIMendixObject2SimpleMapPmb(IMendixObject mp, IContext context) throws Exception {
+	private SimpleMapPmb<Object> convertIMendixObject2SimpleMapPmb(IMendixObject mp, IContext context)
+			throws Exception {
 		SimpleMapPmb<Object> mapPmb = new SimpleMapPmb<Object>();
 		if (mp != null) {
 			Map<String, ? extends IMendixObjectMember<?>> momMap = mp.getMembers(context);
@@ -671,8 +713,8 @@ public class TwoWaySqlExecutor {
 				if (o instanceof List) {
 					List<IMendixObject> orglist = (List<IMendixObject>) o;
 					if (orglist.size() > 0 && orglist.get(0).getMetaObject().getName().endsWith("Value")
-											&& orglist.get(0).getMetaObject().getMetaPrimitive("Value") != null
-											&& orglist.get(0).getMetaObject().getMetaPrimitives().size() == 1) {
+							&& orglist.get(0).getMetaObject().getMetaPrimitive("Value") != null
+							&& orglist.get(0).getMetaObject().getMetaPrimitives().size() == 1) {
 						// Entity名がValueで終わっていてValueという項目のみであればin句用のListとみなして値のみを取り出す
 						ArrayList<Object> newlist = new ArrayList<Object>();
 						for (IMendixObject olo : orglist) {
@@ -716,13 +758,13 @@ public class TwoWaySqlExecutor {
 		if (o != null && o instanceof String && ((String) o).equals("")) {
 			return null;
 		} else if (o != null && o instanceof java.util.Date) {
-			if ((dsoptions & Constants.getEXDS_WO_PRAM_TZ_ADJST()) == 0) {	// EXDS_WO_PRAM_TZ_ADJST指定無し→UTC時刻への調整あり
+			if ((dsoptions & Constants.getEXDS_WO_PRAM_TZ_ADJST()) == 0) { // EXDS_WO_PRAM_TZ_ADJST指定無し→UTC時刻への調整あり
 				var date = (java.util.Date) o; // JavaでDateにする際に実行環境のタイムゾーンになる
 				var utcZonedDatetime = date.toInstant().atZone(ZoneOffset.UTC); // DBにはUTCのまま入れるのでタイムゾーンを変える
 				return java.sql.Timestamp.valueOf(utcZonedDatetime.toLocalDateTime()); // LocalDateTimeと同じ時間のTimeStampeができる
 			} else {
 				// EXDS_WO_PRAM_TZ_ADJST指定ありなのでUTC時刻への調整なし
-				return new java.sql.Timestamp(((java.util.Date)o).getTime());
+				return new java.sql.Timestamp(((java.util.Date) o).getTime());
 			}
 		} else {
 			return o;
@@ -732,10 +774,10 @@ public class TwoWaySqlExecutor {
 	private void setupResultEntityMemberNames(IContext context, String resultEntityType) {
 		if (FakeMendixObject.class.getName().equals(resultEntityType)) {
 			// FakeMendixObjectの場合はそのままメンバー名をキーにして値を返す
-			resultEntityMemberNames  = new HashMap<String, String>() {
-					public String get(Object key) {
-						return (String) key; // FakeMendixObjectはキーがそのままメンバー名
-					}
+			resultEntityMemberNames = new HashMap<String, String>() {
+				public String get(Object key) {
+					return (String) key; // FakeMendixObjectはキーがそのままメンバー名
+				}
 			};
 			return;
 		}
@@ -746,8 +788,9 @@ public class TwoWaySqlExecutor {
 		}
 	}
 
-	private void setupTwoWaySql2PreparedSql(SqlAnalyzerFactory factory, String twoWaySql, Object arg/*,
-			BoundDateDisplayStyle dateDisplayStyle*/) {
+	private void setupTwoWaySql2PreparedSql(SqlAnalyzerFactory factory, String twoWaySql,
+			Object arg/*,
+						BoundDateDisplayStyle dateDisplayStyle*/) {
 		final String[] argNames = new String[] { "pmb" };
 		final Class<?>[] argTypes = new Class<?>[] { arg.getClass() };
 		final Object[] args = new Object[] { arg };
@@ -769,7 +812,8 @@ public class TwoWaySqlExecutor {
 		preparedSql = context.getSql();
 		bindVariables = context.getBindVariables();
 		if (logger.isTraceEnabled()) {
-			logger.trace("setupTwoWaySql2PreparedSql: TwoWaySql=\n" + twoWaySql + "\nPreparedSql=\n" + preparedSql + "\nBindVariables="
+			logger.trace("setupTwoWaySql2PreparedSql: TwoWaySql=\n" + twoWaySql + "\nPreparedSql=\n" + preparedSql
+					+ "\nBindVariables="
 					+ toStringBindVariables());
 		}
 		return;
@@ -790,16 +834,16 @@ public class TwoWaySqlExecutor {
 		throw new IllegalStateException(msg);
 	}
 
-//	当初から使っていないのに気づかずにいた。DBFluteのバージョンアップで気がついて削除。	2025/10/03 youta-s
-//	private BoundDateDisplayStyle createBoundDateDisplayStyle(TimeZone finalTimeZone) {
-//		// BoundDateDisplayStyle (from CB) cannot be serializable so use default
-//		final String datePattern = "yyyy/MM/dd";
-//		final String timestampPattern = "yyyy/MM/dd HH:mm:ss.SSS";
-//		final String timePattern = "HH:mm:ss";
-//		return new BoundDateDisplayStyle(datePattern, timestampPattern, timePattern, () -> {
-//			return finalTimeZone;
-//		});
-//	}
+	//	当初から使っていないのに気づかずにいた。DBFluteのバージョンアップで気がついて削除。	2025/10/03 youta-s
+	//	private BoundDateDisplayStyle createBoundDateDisplayStyle(TimeZone finalTimeZone) {
+	//		// BoundDateDisplayStyle (from CB) cannot be serializable so use default
+	//		final String datePattern = "yyyy/MM/dd";
+	//		final String timestampPattern = "yyyy/MM/dd HH:mm:ss.SSS";
+	//		final String timePattern = "HH:mm:ss";
+	//		return new BoundDateDisplayStyle(datePattern, timestampPattern, timePattern, () -> {
+	//			return finalTimeZone;
+	//		});
+	//	}
 
 	public static String getExtDataSourceNameFromFileName(String twoWaySqlFileName) throws IOException {
 		if (twoWaySqlFileName.startsWith("--")) {
@@ -894,7 +938,9 @@ public class TwoWaySqlExecutor {
 		public ResultSet resultSet;
 		public ResultSetMetaData resultSetMetaData;
 		public int columnCount;
-		public InLineCursorLoopStatus(Connection connection, PreparedStatement statement, ResultSet resultSet, ResultSetMetaData resultSetMetaData, int columnCount) {
+
+		public InLineCursorLoopStatus(Connection connection, PreparedStatement statement, ResultSet resultSet,
+				ResultSetMetaData resultSetMetaData, int columnCount) {
 			this.connection = connection;
 			this.statement = statement;
 			this.resultSet = resultSet;
@@ -902,7 +948,7 @@ public class TwoWaySqlExecutor {
 			this.columnCount = columnCount;
 		}
 	}
-	
+
 	private InLineCursorLoopStatus iclStatus = null;
 
 	public void openInLineCursor(IContext context, String twoWaySqlFileName, IMendixObject parameter) throws Exception {
@@ -943,7 +989,7 @@ public class TwoWaySqlExecutor {
 		}
 		this.iclStatus = new InLineCursorLoopStatus(con, stmt, rset, rmd, colCount);
 	}
-	
+
 	public IMendixObject readNextInLineCursor(IContext context, String resultEntityType) throws Exception {
 		if (this.iclStatus == null) {
 			throw new MendixRuntimeException("InLineCursor is not opened.");
@@ -954,9 +1000,10 @@ public class TwoWaySqlExecutor {
 		if (resultEntityMemberNames.size() == 0) {
 			setupResultEntityMemberNames(context, resultEntityType);
 		}
-		return readToMendixObject(context, resultEntityType, this.iclStatus.resultSet, this.iclStatus.columnCount, this.iclStatus.resultSetMetaData);
+		return readToMendixObject(context, resultEntityType, this.iclStatus.resultSet, this.iclStatus.columnCount,
+				this.iclStatus.resultSetMetaData);
 	}
-	
+
 	public void closeInLineCursor() throws Exception {
 		if (this.iclStatus == null) {
 			throw new MendixRuntimeException("InLineCursor is not opened.");
@@ -971,11 +1018,20 @@ public class TwoWaySqlExecutor {
 	 * Additional functions for mocking
 	 */
 	public interface TwoWaySqlMocker {
-		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, String resultEntityType) throws Exception;
-		public java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
-		public java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap) throws Exception;
-		public java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
-		public java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective, Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
+		public java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective,
+				Map<String, Object> paramMap, String resultEntityType) throws Exception;
+
+		public java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective,
+				Map<String, Object> paramMap) throws Exception;
+
+		public java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective,
+				Map<String, Object> paramMap) throws Exception;
+
+		public java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective,
+				Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
+
+		public java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective,
+				Map<String, Object> paramMap, FileDocument excelFileDocument) throws Exception;
 	}
 
 	private static TwoWaySqlMocker twoWaySqlMocker = null;
@@ -990,7 +1046,8 @@ public class TwoWaySqlExecutor {
 		return null;
 	}
 
-	public static java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, String resultEntityType) throws Exception {
+	public static java.util.List<IMendixObject> mockRetrieveByTwoWaySql(IContext context, String mockDirective,
+			IMendixObject actionParameter, String resultEntityType) throws Exception {
 		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
 		java.util.List<IMendixObject> resultList = null;
 		try {
@@ -1001,7 +1058,8 @@ public class TwoWaySqlExecutor {
 		return resultList;
 	}
 
-	public static java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter) throws Exception {
+	public static java.lang.Long mockCountRowsByTwoWaySql(IContext context, String mockDirective,
+			IMendixObject actionParameter) throws Exception {
 		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
 		java.lang.Long count = null;
 		try {
@@ -1012,7 +1070,8 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
-	public static java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter) throws Exception {
+	public static java.lang.Long mockUpdateByTwoWaySql(IContext context, String mockDirective,
+			IMendixObject actionParameter) throws Exception {
 		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
 		java.lang.Long count = null;
 		try {
@@ -1023,7 +1082,8 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
-	public static java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, FileDocument csvFileDocument) throws Exception {
+	public static java.lang.Long mockExportCsvByTwoWaySql(IContext context, String mockDirective,
+			IMendixObject actionParameter, FileDocument csvFileDocument) throws Exception {
 		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
 		java.lang.Long count = null;
 		try {
@@ -1034,7 +1094,8 @@ public class TwoWaySqlExecutor {
 		return count;
 	}
 
-	public static java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective, IMendixObject actionParameter, FileDocument excelFileDocument) throws Exception {
+	public static java.lang.Long mockExportExcelByTwoWaySql(IContext context, String mockDirective,
+			IMendixObject actionParameter, FileDocument excelFileDocument) throws Exception {
 		Map<String, Object> paramMap = prepareCallMocker(context, actionParameter);
 		java.lang.Long count = null;
 		try {
@@ -1049,9 +1110,10 @@ public class TwoWaySqlExecutor {
 		if (twoWaySqlMocker == null) {
 			try {
 				Class<?> mockerClass = Class.forName("twowaysqlmocker.implementation.TwoWaySqlMockerImpl");
-				twoWaySqlMocker = (TwoWaySqlMocker)mockerClass.getDeclaredConstructor().newInstance();
+				twoWaySqlMocker = (TwoWaySqlMocker) mockerClass.getDeclaredConstructor().newInstance();
 			} catch (Exception e) {
-				throw new MendixRuntimeException("TwoWaySqlMocker is not set and TwoWaySqlMockerImpl class is not found.", e);
+				throw new MendixRuntimeException(
+						"TwoWaySqlMocker is not set and TwoWaySqlMockerImpl class is not found.", e);
 			}
 		}
 		HashMap<String, Object> paramMap = new HashMap<String, Object>();

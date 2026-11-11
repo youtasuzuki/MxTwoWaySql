@@ -191,6 +191,16 @@ public final class Microflows
 			)
 			.execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_EXT_TimestampTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_EXT_TimestampTest");
+		return builder;
+	}
+
+	public static void aCT_EXT_TimestampTest(IContext context)
+	{
+		aCT_EXT_TimestampTestBuilder().execute(context);
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_ExtDsExportCsvTestBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_ExtDsExportCsvTest");
