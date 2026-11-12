@@ -191,6 +191,27 @@ public final class Microflows
 			)
 			.execute(context);
 	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_EXT_Timestamp_ExportTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_EXT_Timestamp_ExportTest");
+		return builder;
+	}
+
+	public static void aCT_EXT_Timestamp_ExportTest(IContext context)
+	{
+		aCT_EXT_Timestamp_ExportTestBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_EXT_Timestamp_InsertTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_EXT_Timestamp_InsertTest");
+		return builder;
+	}
+
+	public static java.util.List<myfirstmodule.proxies.ExtEmployee4> aCT_EXT_Timestamp_InsertTest(IContext context)
+	{
+		Object result = aCT_EXT_Timestamp_InsertTestBuilder().execute(context);
+		return result == null ? null : com.mendix.utils.ListUtils.map((java.util.List<IMendixObject>) result, obj -> myfirstmodule.proxies.ExtEmployee4.initialize(context, obj));
+	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_EXT_TimestampTestBuilder()
 	{
 		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_EXT_TimestampTest");
@@ -300,6 +321,16 @@ public final class Microflows
 	public static void aCT_InsertSelectByTwoWaySql_TEST(IContext context)
 	{
 		aCT_InsertSelectByTwoWaySql_TESTBuilder().execute(context);
+	}
+	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_LocallizeTestBuilder()
+	{
+		com.mendix.core.actionmanagement.MicroflowCallBuilder builder = Core.microflowCall("MyFirstModule.ACT_LocallizeTest");
+		return builder;
+	}
+
+	public static void aCT_LocallizeTest(IContext context)
+	{
+		aCT_LocallizeTestBuilder().execute(context);
 	}
 	public static com.mendix.core.actionmanagement.MicroflowCallBuilder aCT_MockRetrieveByTwoWaySqlBuilder()
 	{

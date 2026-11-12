@@ -61,9 +61,9 @@ public final class ExcelExporter {
 	 *
 	 * @return 出力したデータ行数（ヘッダー行を含まない）
 	 */
-	public static long exportToExcel(FileDocument fileDocument, ResultSet resultSet, Long dsoptions, DateTimeFormatter dateFormat, ZoneId userZone)
+	public static long exportToExcel(FileDocument fileDocument, ResultSet resultSet, Long dsoptions, DateTimeFormatter dateFormat, ZoneId dbZone, ZoneId userZone)
 			throws IOException, SQLException {
-		return exportToExcel(fileDocument, resultSet, null, dsoptions, dateFormat, userZone);
+		return exportToExcel(fileDocument, resultSet, null, dsoptions, dateFormat, dbZone, userZone);
 	}
 
 	/**
@@ -76,14 +76,14 @@ public final class ExcelExporter {
 	 *                  連番を含めて 31 文字に収まるよう切り詰める。
 	 * @return 出力したデータ行数（ヘッダー行を含まない）
 	 */
-	public static long exportToExcel(FileDocument fileDocument, ResultSet resultSet, String sheetName, Long dsoptions, DateTimeFormatter dateFormat, ZoneId userZone)
+	public static long exportToExcel(FileDocument fileDocument, ResultSet resultSet, String sheetName, Long dsoptions, DateTimeFormatter dateFormat, ZoneId dbZone, ZoneId userZone)
 			throws IOException, SQLException {
 		Path tmp = Files.createTempFile(
 				Core.getConfiguration().getTempPath().toPath(), "twowaysql-", ".xlsx");
 		try {
 			long rowCount;
 			try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(tmp))) {
-				rowCount = writeXlsx(os, resultSet, sheetName, dsoptions, dateFormat, userZone);
+				rowCount = writeXlsx(os, resultSet, sheetName, dsoptions, dateFormat, dbZone, userZone);
 			}
 			try (InputStream in = new BufferedInputStream(Files.newInputStream(tmp))) {
 				Core.storeFileDocumentContent(
@@ -100,7 +100,7 @@ public final class ExcelExporter {
 	 *
 	 * @return 出力したデータ行数（ヘッダー行を含まない）
 	 */
-	static long writeXlsx(OutputStream out, ResultSet rs, String sheetName, Long dsoptions, DateTimeFormatter dateFormat, ZoneId userZone) throws IOException, SQLException {
+	static long writeXlsx(OutputStream out, ResultSet rs, String sheetName, Long dsoptions, DateTimeFormatter dateFormat, ZoneId dbZone, ZoneId userZone) throws IOException, SQLException {
 		ResultSetMetaData md = rs.getMetaData();
 		int cols = md.getColumnCount();
 		if (cols > MAX_COLUMNS) {
@@ -135,7 +135,7 @@ public final class ExcelExporter {
 					for (int c = 0; c < cols; c++) {
 						//Object value = rs.getObject(c + 1);
 						Object value = TwoWaySqlExecutor.readColumnValue(rs, c + 1, md);
-						Object exportValue = TwoWaySqlExecutor.convertToExportValue(value, dateFormat, userZone);
+						Object exportValue = TwoWaySqlExecutor.convertToExportValue(value, dateFormat, dbZone, userZone);
 						values[c] = exportValue == null ? null : exportValue.toString();
 					}
 					writeRow(w, rowNum, values, colRefs);

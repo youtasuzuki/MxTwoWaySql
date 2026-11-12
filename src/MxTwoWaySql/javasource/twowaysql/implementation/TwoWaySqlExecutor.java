@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -25,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +47,6 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixIdentifier;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
-import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 import system.proxies.FileDocument;
@@ -61,7 +60,7 @@ public class TwoWaySqlExecutor {
 	private String preparedSql;
 	private Object[] bindVariables = new Object[0];
 	private Long dsoptions = 0L;
-	private ZoneId dsZoneId = java.time.ZoneId.of("UTC");	// UTCは内部DB用のデフォルト値
+	private ZoneId dsZoneId = java.time.ZoneId.of("UTC"); // UTCは内部DB用のデフォルト値
 	private Map<String, String> resultEntityMemberNames = new HashMap<String, String>();
 	private static Map<String, String> sqlMap = new ConcurrentHashMap<String, String>();
 	public static final String MOCK_DIRECTIVE = "$$MOCK_";
@@ -249,13 +248,14 @@ public class TwoWaySqlExecutor {
 		// EXDS_WO_RSLT_TZ_ADJST指定なし → UTCとして解釈（内部DBもこの扱い）
 		// EXDS_WO_RSLT_TZ_ADJST指定あり → 外部DBのタイムゾーンで解釈
 		ZoneId effectiveZone = ((dsoptions & Constants.getEXDS_WO_RSLT_TZ_ADJST()) == 0)
-		        ? ZoneOffset.UTC : dsZoneId;
+				? ZoneOffset.UTC
+				: dsZoneId;
 		for (int colIdx = 1; colIdx <= colCount; colIdx++) {
 			String colName = rmd.getColumnLabel(colIdx);
 			String entityMemberName = resultEntityMemberNames.get(colName.toLowerCase());
 			if (entityMemberName != null) {
 				var memberValue = readColumnValue(rset, colIdx, rmd);
-				obj.setValue(context, entityMemberName, 
+				obj.setValue(context, entityMemberName,
 						toMendixValue(memberValue, isLocalized(resultEntityType, entityMemberName), effectiveZone));
 			}
 		}
@@ -270,26 +270,26 @@ public class TwoWaySqlExecutor {
 		if (type == -101 /* OracleTypes.TIMESTAMPTZ */
 				|| type == Types.TIMESTAMP_WITH_TIMEZONE
 				|| "timestamptz".equalsIgnoreCase(typeName)) {
-			return  rset.getObject(i, OffsetDateTime.class);
+			return rset.getObject(i, OffsetDateTime.class);
 		}
 
 		// Oracle TIMESTAMP WITH LOCAL TIME ZONE: ドライバーがセッションTZから瞬間に変換
 		if (type == -102 /* OracleTypes.TIMESTAMPLTZ */) {
 			Timestamp ts = rset.getTimestamp(i);
-	        return ts == null ? null : ts.toInstant().atOffset(ZoneOffset.UTC);  // 瞬間
+			return ts == null ? null : ts.toInstant().atOffset(ZoneOffset.UTC); // 瞬間
 		}
 
 		// Oracle DATE / TIMESTAMP, Postgres timestamp（Mendix内部DB含む）
 		if (type == Types.TIMESTAMP) {
 			return rset.getObject(i, LocalDateTime.class);
 		}
-		
+
 		// Postgres date など暦日（タイムゾーンなし）
 		// ※Oracle DATEは mapDateToTimestamp=true（デフォルト）なら TIMESTAMP 側に来る
 		if (type == Types.DATE) {
 			return rset.getObject(i, LocalDate.class);
 		}
-		
+
 		return rset.getObject(i);
 	}
 
@@ -309,16 +309,19 @@ public class TwoWaySqlExecutor {
 	private static final Map<String, Boolean> localizeCache = new ConcurrentHashMap<>();
 
 	private static boolean isLocalized(String entityType, String memberName) {
-		if (entityType == null || memberName == null) return false;
-	    // メタ情報のないFakeMendixObjectは従来通りdbZoneで解釈
-	    if (FakeMendixObject.class.getName().equals(entityType)) return true;
-	    return localizeCache.computeIfAbsent(entityType + "." + memberName, k -> {
-	        IMetaPrimitive p = Core.getMetaObject(entityType).getMetaPrimitive(memberName);
-	        if (p == null || p.getType() != IMetaPrimitive.PrimitiveType.DateTime) return true;
-	        return p.shouldLocalizeDate();
-	    });
+		if (entityType == null || memberName == null)
+			return false;
+		// メタ情報のないFakeMendixObjectは従来通りdbZoneで解釈
+		if (FakeMendixObject.class.getName().equals(entityType))
+			return true;
+		return localizeCache.computeIfAbsent(entityType + "." + memberName, k -> {
+			IMetaPrimitive p = Core.getMetaObject(entityType).getMetaPrimitive(memberName);
+			if (p == null || p.getType() != IMetaPrimitive.PrimitiveType.DateTime)
+				return true;
+			return p.shouldLocalizeDate();
+		});
 	}
-	
+
 	public int updateByTwoWaySql(IContext context, String twoWaySqlFileName, IMendixObject parameter)
 			throws Exception {
 		int updateCount;
@@ -557,7 +560,7 @@ public class TwoWaySqlExecutor {
 						for (int colIdx = 1; colIdx <= colCount; colIdx++) {
 							//Object value = rset.getObject(colIdx);
 							var value = readColumnValue(rset, colIdx, rmd);
-							Object convertedValue = convertToExportValue(value, dateFormat, userZone);
+							Object convertedValue = convertToExportValue(value, dateFormat, dsZoneId, userZone);
 							values.add(convertedValue);
 						}
 						csvPrinter.printRecord(values);
@@ -621,7 +624,8 @@ public class TwoWaySqlExecutor {
 				setupSlowQueryDetection();
 				try (ResultSet rset = stmt.executeQuery()) {
 					reportSlowQuery();
-					count = ExcelExporter.exportToExcel(excelFileDocument, rset, sheetName, dsoptions, dateFormat, userZone);
+					count = ExcelExporter.exportToExcel(excelFileDocument, rset, sheetName, dsoptions, dateFormat,
+							dsZoneId, userZone);
 				}
 			}
 			if (logger.isDebugEnabled()) {
@@ -642,7 +646,7 @@ public class TwoWaySqlExecutor {
 	public static DecimalFormat decFmt = new DecimalFormat("#.########");
 
 	public static Object convertToExportValue(Object value, DateTimeFormatter dateFormat,
-			ZoneId userZone) {
+			ZoneId dbZone, ZoneId userZone) {
 		if (value instanceof BigDecimal) {
 			return decFmt.format(((BigDecimal) value).stripTrailingZeros());
 		} else if (value instanceof Boolean) {
@@ -651,11 +655,11 @@ public class TwoWaySqlExecutor {
 			// 瞬間 → ユーザーのタイムゾーンで表示
 			return ((OffsetDateTime) value).atZoneSameInstant(userZone).format(dateFormat);
 		} else if (value instanceof LocalDateTime) {
-			// タイムゾーンなし → DBの値そのまま
-			return ((LocalDateTime) value).format(dateFormat);
+			// タイムゾーンなし → DBの値そのまま（オフセットはDBのタイムゾーン）
+			return ((LocalDateTime) value).atZone(dbZone).format(dateFormat);
 		} else if (value instanceof LocalDate) {
-			// 暦日 → 0時として表示（時刻を含むフォーマットでも落ちないように）
-			return ((LocalDate) value).atStartOfDay().format(dateFormat);
+			// 暦日 → 0時として表示
+			return ((LocalDate) value).atStartOfDay(dbZone).format(dateFormat);
 		} else if (value instanceof Date) {
 			// 従来互換: 瞬間としてユーザーのタイムゾーンで表示
 			return ((Date) value).toInstant().atZone(userZone).format(dateFormat);
@@ -701,9 +705,12 @@ public class TwoWaySqlExecutor {
 			throws Exception {
 		SimpleMapPmb<Object> mapPmb = new SimpleMapPmb<Object>();
 		if (mp != null) {
+			String entityType = mp.getType();
 			Map<String, ? extends IMendixObjectMember<?>> momMap = mp.getMembers(context);
 			for (String key : momMap.keySet()) {
-				mapPmb.addParameter(key, mxParam2DbfluteParam(momMap.get(key).getValue(context)));
+				// パラメータエンティティの属性: そのエンティティのLocalize設定で判定
+				mapPmb.addParameter(key, mxParam2DbfluteParam(
+						momMap.get(key).getValue(context), isLocalized(entityType, key)));
 			}
 		}
 		try {
@@ -715,24 +722,25 @@ public class TwoWaySqlExecutor {
 					if (orglist.size() > 0 && orglist.get(0).getMetaObject().getName().endsWith("Value")
 							&& orglist.get(0).getMetaObject().getMetaPrimitive("Value") != null
 							&& orglist.get(0).getMetaObject().getMetaPrimitives().size() == 1) {
-						// Entity名がValueで終わっていてValueという項目のみであればin句用のListとみなして値のみを取り出す
+						// in句用リスト: Valueエンティティの"Value"属性のLocalize設定で判定（リスト内は同じ型なので1回だけ）
+						boolean localized = isLocalized(orglist.get(0).getType(), "Value");
 						ArrayList<Object> newlist = new ArrayList<Object>();
 						for (IMendixObject olo : orglist) {
-							Object oloVal = olo.getValue(context, "Value");
-							newlist.add(mxParam2DbfluteParam(oloVal));
+							newlist.add(mxParam2DbfluteParam(olo.getValue(context, "Value"), localized));
 						}
 						mapPmb.addParameter(key, newlist);
 					} else {
-						// in句用以外ならプロキシのリストに変換して設定
+						// in句用以外ならMapのリストに変換して設定
 						List<IMendixObject> moList = (List<IMendixObject>) o;
 						List<Object> proxyList = new ArrayList<Object>();
 						for (IMendixObject mo : moList) {
-							proxyList.add(toProxyObject(context, mo));
+							proxyList.add(toParamMap(context, mo));
 						}
 						mapPmb.addParameter(key, proxyList);
 					}
 				} else {
-					mapPmb.addParameter(key, mxParam2DbfluteParam(o));
+					// 単独パラメータ: メタ情報がないのでdsZoneIdで解釈（FakeMendixObjectと同じ扱い）
+					mapPmb.addParameter(key, mxParam2DbfluteParam(o, true));
 				}
 			}
 		} finally {
@@ -741,34 +749,35 @@ public class TwoWaySqlExecutor {
 		return mapPmb;
 	}
 
-	private static Object toProxyObject(IContext mxcontext, IMendixObject mo) throws Exception {
+	private Object toParamMap(IContext context, IMendixObject mo) {
 		if (mo == null) {
 			return null;
 		}
-		IMetaObject meta = mo.getMetaObject();
-		String proxyClassName = meta.getModuleName().toLowerCase() + ".proxies."
-				+ meta.getName().replace(meta.getModuleName() + ".", "");
-		Class clazz = Class.forName(proxyClassName);
-		Method initializeer = clazz.getDeclaredMethod("initialize", IContext.class, IMendixObject.class);
-		Object proxy = initializeer.invoke(null, mxcontext, mo);
-		return proxy;
+		String entityType = mo.getType();
+		Map<String, Object> map = new LinkedHashMap<>();
+		for (Map.Entry<String, ? extends IMendixObjectMember<?>> e : mo.getMembers(context).entrySet()) {
+			String name = e.getKey();
+			Object v = mxParam2DbfluteParam(e.getValue().getValue(context), isLocalized(entityType, name));
+			// プロキシの getter（getBirthDate）から導かれるプロパティ名（birthDate）に揃える
+			map.put(java.beans.Introspector.decapitalize(name), v);
+		}
+		return map;
 	}
 
-	private Object mxParam2DbfluteParam(Object o) {
-		if (o != null && o instanceof String && ((String) o).equals("")) {
+	private Object mxParam2DbfluteParam(Object o, boolean localized) {
+		if (o instanceof String && ((String) o).isEmpty()) {
 			return null;
-		} else if (o != null && o instanceof java.util.Date) {
-			if ((dsoptions & Constants.getEXDS_WO_PRAM_TZ_ADJST()) == 0) { // EXDS_WO_PRAM_TZ_ADJST指定無し→UTC時刻への調整あり
-				var date = (java.util.Date) o; // JavaでDateにする際に実行環境のタイムゾーンになる
-				var utcZonedDatetime = date.toInstant().atZone(ZoneOffset.UTC); // DBにはUTCのまま入れるのでタイムゾーンを変える
-				return java.sql.Timestamp.valueOf(utcZonedDatetime.toLocalDateTime()); // LocalDateTimeと同じ時間のTimeStampeができる
-			} else {
-				// EXDS_WO_PRAM_TZ_ADJST指定ありなのでUTC時刻への調整なし
-				return new java.sql.Timestamp(((java.util.Date) o).getTime());
-			}
-		} else {
-			return o;
+		} else if (o instanceof java.util.Date) {
+			// EXDS_WO_PRAM_TZ_ADJST指定なし → UTCとして書き込む（内部DBもこの扱い）
+			// EXDS_WO_PRAM_TZ_ADJST指定あり → ローカライズ属性はdsZoneId、非ローカライズ属性はUTC
+			ZoneId zone = ((dsoptions & Constants.getEXDS_WO_PRAM_TZ_ADJST()) == 0 || !localized)
+					? ZoneOffset.UTC
+					: dsZoneId;
+			LocalDateTime ldt = LocalDateTime.ofInstant(((java.util.Date) o).toInstant(), zone);
+			// JVMのタイムゾーンでldtと同じ壁時計のTimestamp。バインド時にJVMのTZで戻されるので ldt がそのままDBに入る
+			return java.sql.Timestamp.valueOf(ldt);
 		}
+		return o;
 	}
 
 	private void setupResultEntityMemberNames(IContext context, String resultEntityType) {
