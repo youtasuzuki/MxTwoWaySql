@@ -71,8 +71,8 @@ where
 ```
 insert into employee_on_external_db
 (
-    name,
-    address
+    Name,
+    Address
 )
 values
 -- Before calling UpdateByTwoWaySql,
@@ -81,8 +81,8 @@ values
 -- You cannot insert data into the Mendix internal database.
 /*FOR pmb.EmployeeList*/
 /*NEXT ','*/( 
-    /*#current.name*/'test_name',
-    /*#current.address*/'test_address'
+    /*#current.Name*/'test_name',
+    /*#current.Address*/'test_address'
 )
 /*END*/
 
@@ -152,6 +152,8 @@ It also incorporates a mechanism designed to verify consistency with the databas
 - You can download it from https://marketplace.mendix.com/link/component/309653.
 
 # Restrictions
+- When passing a parameter to a column with a time zone (TIMESTAMP WITH TIME ZONE) in an external database, the value is interpreted based on the session time zone.
+- In v2.13.0, list parameters (other than those used in the IN clause) were internally changed from proxy classes to Maps, so it is no longer possible to traverse associations within SQL.
 - To maintain simplicity, the current internal implementation for creating a DataSource supports only the standard, classic method using a username and password with `HikariDataSource`. However, since the public `twowaysql.integration.putExtDataSource(name, dataSource)` method allows you to configure a data source externally, you can set up your own data source —such as one authenticated via mTLS/TCPO, Auth 2.0, etc— from outside the library. Please refer to the sample implementation of RegisterOracleMtlsExternalDataSource.
 
 # Dependencies
