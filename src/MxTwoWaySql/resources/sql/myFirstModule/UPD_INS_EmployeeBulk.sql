@@ -2,12 +2,14 @@
 
 INSERT INTO employee
 (
-    name,
-    address
+    Name,
+    Address,
+    BirthDate
 ) VALUES 
 /*FOR pmb.EmployeeList*/
 /*NEXT ','*/( 
-    /*#current.name*/'社員_1',
-    /*#current.address*/'東京都中央区1-1'
+    /*#current.Name*/'社員_1',
+    /*#current.Address*/'東京都中央区1-1',
+    /*#current.BirthDate*/'2017-05-01'
 )
 /*END*/

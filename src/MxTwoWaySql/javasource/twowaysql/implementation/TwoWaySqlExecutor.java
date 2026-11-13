@@ -759,7 +759,7 @@ public class TwoWaySqlExecutor {
 			String name = e.getKey();
 			Object v = mxParam2DbfluteParam(e.getValue().getValue(context), isLocalized(entityType, name));
 			// プロキシの getter（getBirthDate）から導かれるプロパティ名（birthDate）に揃える
-			map.put(java.beans.Introspector.decapitalize(name), v);
+			map.put(name, v);
 		}
 		return map;
 	}
