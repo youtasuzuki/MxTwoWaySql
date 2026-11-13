@@ -53,12 +53,14 @@ public final class Constants
 	}
 
 	/**
-	* This option prevents the system from adjusting SQL parameters of the "Date and Time" type (with time zone) to UTC when converting them to `java.sql.Timestamp` (without time zone).
-	* By default, a "Date and Time" parameter value of 9:00 JST would be converted to 0:00; enabling this option ensures it remains 9:00.
-	* As this setting applies to parameters, it affects parameters used in `WHERE`, `INSERT`, or `UPDATE` clauses within the "AddDateTimeParameter" action.
+	* Enabling this option prevents the system from automatically adjusting Mendix "Date and Time" type SQL parameters to UTC when passing them to the database.
+	* For example, if the Mendix runtime is operating in the "UTC+9:00" time zone, a "Date and Time" value representing "9:00" will be saved to the database as "9:00" rather than "0:00".
+	* Since this setting applies to JDBC parameters, it affects parameters used within `WHERE`, `INSERT`, or `UPDATE` clauses in the "AddDateTimeParameter" action.
 	* 
-	* If the external data source is a Mendix database, UTC time without a time zone is already stored, so this option is not required.
-	* In other cases, please configure this setting according to your environment.
+	* If the external data source is a Mendix database, this option does not need to be configured, as the data is already stored in UTC without time zone information.
+	* In all other cases, please configure this setting according to your specific environment.
+	* 
+	* As of version 2.13.0, you can specify a `ZoneId` parameter when registering an external database data source; this allows you to override the default Mendix runtime time zone when writing data to the database.
 	*/
 	public static java.lang.Long getEXDS_WO_PRAM_TZ_ADJST()
 	{
@@ -66,14 +68,18 @@ public final class Constants
 	}
 
 	/**
-	* When converting a `java.sql.Timestamp` (timezone-agnostic) obtained from an external data source query into a Mendix Runtime "Date and Time" attribute (timezone-aware), this option treats the retrieved timestamp as already adjusted to the execution environment's timezone, thereby preventing any additional UTC-based timezone adjustment.
-	* This option is not required if the external data source is the Mendix database itself.
-	* In other cases, please configure this setting according to your environment.
+	* This is the inverse of `EXDS_WO_PRAM_TZ_ADJST` and applies when reading data from a database.
+	* When this option is enabled, it prevents the system from automatically adjusting values—which are stored in the database without time zone information—to the Mendix runtime time zone (by treating them as UTC) during the process of reading them into Mendix "Date and Time" attributes.
 	* 
-	* By default (without this option), if the target timezone is JST and the SQL result's `java.sql.Timestamp` is 00:00, the output value becomes 09:00 JST; however, enabling this option results in 00:00 JST.
-	* *Note: The "target timezone" here refers to the VM execution environment's timezone for `RetrieveByTwoWaySql`, and the timezone specified in the `CsvFormat` for `ExportCsvByTwoWaySql`.
+	* If the external data source is the Mendix database itself, this option does not need to be configured.
+	* In all other cases, please configure this setting according to your specific environment.
 	* 
-	* Since this setting applies to the conversion of SQL execution results, it only affects data storage into entity "Date and Time" attributes and CSV output operations. It does not affect cases where date/time fields from the database are converted directly to strings within the SQL statement itself. If you convert date/time fields to strings within the SQL, please account for timezone adjustments at that stage.
+	* By default (with this option disabled), if the Mendix runtime time zone is set to "UTC+9:00" and the value in the database is "0:00," the resulting output value will be "9:00." Conversely, if this option is enabled, the output value will be "0:00."
+	* 
+	* Because this setting applies to the conversion of SQL execution results, it only affects data stored into entity "Date and Time" attributes or data exported to CSV files. It does not affect cases where a database date/time field is converted directly into a string within an SQL statement. If you are converting a date/time field to a string within SQL, please ensure that you account for time zone adjustments at that stage.
+	* 
+	* As of version 2.13.0, you can specify a `ZoneId` parameter when registering an external database data source; this allows you to override the default Mendix runtime time zone when writing data to the database.
+	* 
 	*/
 	public static java.lang.Long getEXDS_WO_RSLT_TZ_ADJST()
 	{

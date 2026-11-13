@@ -24,6 +24,8 @@ import com.mendix.systemwideinterfaces.core.UserAction;
  * - TwoWaySQL.StringValue
  * For 2Way 'For' syntax, Lists of other entities can also be used.
  * 
+ * In v2.13.0, list parameters (other than those used in the IN clause) were internally changed from proxy classes to Maps, so it is no longer possible to traverse associations within SQL.
+ * 
  */
 public class AddListParameter extends UserAction<java.lang.Boolean>
 {
